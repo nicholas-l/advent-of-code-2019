@@ -4,8 +4,12 @@ pub mod day02;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{fs, io::BufRead, path::{Path, PathBuf}};
     use std::io::BufReader;
+    use std::{
+        fs,
+        io::BufRead,
+        path::{Path, PathBuf},
+    };
 
     fn get_data(filepath: &PathBuf) -> Box<dyn BufRead> {
         let f = fs::File::open(filepath).unwrap();

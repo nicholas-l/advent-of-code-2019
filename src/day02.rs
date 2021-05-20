@@ -43,7 +43,7 @@ fn process(codes: &mut Vec<usize>) -> usize {
         }
         index += 4;
     }
-    return codes[0];
+    codes[0]
 }
 
 pub fn star_two(input: impl BufRead) -> usize {

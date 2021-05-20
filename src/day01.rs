@@ -1,7 +1,7 @@
 use std::io::BufRead;
 
 fn process(mass: usize) -> usize {
-    return mass / 3 - 2;
+    mass / 3 - 2
 }
 
 fn process2(mass: isize) -> isize {
