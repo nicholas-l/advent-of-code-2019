@@ -1,15 +1,10 @@
-use std::{
-    io::BufRead,
-    path::{Path, PathBuf},
-};
-
 pub mod day01;
 pub mod day02;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
+    use std::{fs, io::BufRead, path::{Path, PathBuf}};
     use std::io::BufReader;
 
     fn get_data(filepath: &PathBuf) -> Box<dyn BufRead> {
