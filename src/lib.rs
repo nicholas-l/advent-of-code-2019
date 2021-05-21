@@ -1,5 +1,8 @@
 pub mod day01;
 pub mod day02;
+pub mod day03;
+pub mod day04;
+pub mod day05;
 
 #[cfg(test)]
 mod tests {
@@ -31,5 +34,29 @@ mod tests {
         assert_eq!(day02::star_one(get_data(&filepath)), 3516593);
 
         assert_eq!(day02::star_two(get_data(&filepath)), 7749);
+    }
+
+    #[test]
+    fn day03_complete() {
+        let filepath = Path::new("data").join("day03.txt");
+        assert_eq!(day03::star_one(get_data(&filepath)), 1211);
+
+        assert_eq!(day03::star_two(get_data(&filepath)), 101386);
+    }
+
+    #[test]
+    fn day04_complete() {
+        let filepath = Path::new("data").join("day04.txt");
+        assert_eq!(day04::star_one(get_data(&filepath)), 921);
+
+        assert_eq!(day04::star_two(get_data(&filepath)), 603);
+    }
+
+    #[test]
+    fn day05_complete() {
+        let filepath = Path::new("data").join("day05.txt");
+        assert_eq!(day05::star_one(get_data(&filepath)), 9961446);
+
+        assert_eq!(day05::star_two(get_data(&filepath)), 742621);
     }
 }

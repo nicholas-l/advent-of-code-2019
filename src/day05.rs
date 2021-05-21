@@ -1,11 +1,12 @@
-use std::fs;
+use std::io::BufRead;
+
 // TODO change to getting the input values.
 fn process(codes: &mut [isize], input: isize) -> Vec<isize> {
     let mut index = 0;
     let mut output = vec![];
     let get_parameter = |program: &[isize], op, pos: usize| {
         // println!("{:?} {} {} {}", program, op, pos, (program[op] / (10*10_isize.pow(pos as u32))) % 10);
-        if (program[op] / (10*10_isize.pow(pos as u32))) % 10 == 1 {
+        if (program[op] / (10 * 10_isize.pow(pos as u32))) % 10 == 1 {
             program[op + pos]
         } else {
             program[program[op + pos] as usize]
@@ -87,51 +88,62 @@ fn process(codes: &mut [isize], input: isize) -> Vec<isize> {
             }
         }
     }
-    return output;
+    output
 }
 
-fn main() {
-    let mut codes: Vec<isize> = fs::read_to_string("./input.txt")
-        .unwrap()
-        .split(",")
+pub fn star_one(input: impl BufRead) -> usize {
+    let mut codes: Vec<isize> = input
+        .split(b',')
         .map(|v| {
             // println!("{}", &v);
-            v.parse::<isize>().unwrap()
+            String::from_utf8(v.unwrap())
+                .unwrap()
+                .parse::<isize>()
+                .unwrap()
+        })
+        .collect();
+    let output = process(&mut codes, 1);
+    output.into_iter().find(|&x| x != 0).unwrap() as usize
+}
+
+pub fn star_two(input: impl BufRead) -> usize {
+    let mut codes: Vec<isize> = input
+        .split(b',')
+        .map(|v| {
+            // println!("{}", &v);
+            String::from_utf8(v.unwrap())
+                .unwrap()
+                .parse::<isize>()
+                .unwrap()
         })
         .collect();
     let output = process(&mut codes, 5);
-    println!("{:?}", output);
+    output.into_iter().find(|&x| x != 0).unwrap() as usize
 }
 
 #[cfg(test)]
 mod tests {
+    // use std::io::Cursor;
+
     use super::*;
 
     #[test]
-    fn test_program_1() {
+    fn test_star_one() {}
+
+    #[test]
+    fn test_star_two() {}
+
+    #[test]
+    fn test_program() {
         let mut program = vec![1101, 100, -1, 4, 0];
-        let output = process(&mut program, 1);
+        let _output = process(&mut program, 1);
         assert_eq!(program, vec!(1101, 100, -1, 4, 99));
     }
 
     #[test]
-    fn test_program_1_2() {
-        let mut program = vec![1002, 4, 3, 4, 33];
-        let output = process(&mut program, 1);
-        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
-    }
-
-    #[test]
     fn test_program_2() {
-        let mut program = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
-        let output = process(&mut program, 5);
-        assert_eq!(output.last(), Some(&1));
-    }
-
-    #[test]
-    fn test_program_2_2() {
         let mut program = vec![1002, 4, 3, 4, 33];
-        let output = process(&mut program, 5);
+        let _output = process(&mut program, 1);
         assert_eq!(program, vec!(1002, 4, 3, 4, 99));
     }
 }
