@@ -21,7 +21,7 @@ struct Picture {
 }
 
 impl Picture {
-    fn layers<'a>(&'a self) -> impl Iterator<Item = Layer> + 'a {
+    fn layers(&'_ self) -> impl Iterator<Item = Layer> + '_ {
         self.data
             .chunks(self.width * self.height)
             .map(|v| Layer(v.to_owned()))
@@ -50,12 +50,14 @@ impl Picture {
     }
 }
 
-fn to_layers<'a>(input: &'a [u8], width: usize, height: usize) -> impl Iterator<Item = Layer> + 'a {
-    input.chunks(width * height).map(|v| Layer(v.to_owned()))
-}
-
-fn process(data: &[u8], width: usize, height: usize) -> usize {
-    let layer = to_layers(data, width, height)
+fn process(data: Vec<u8>, width: usize, height: usize) -> usize {
+    let p = Picture {
+        data,
+        width,
+        height,
+    };
+    let layer = p
+        .layers()
         .min_by_key(|l| l.0.iter().filter(|&x| x == &0).count())
         .unwrap();
 
@@ -64,17 +66,17 @@ fn process(data: &[u8], width: usize, height: usize) -> usize {
 
 pub fn star_one(mut input: impl BufRead) -> usize {
     let mut input_text = String::new();
-    input.read_to_string(&mut input_text);
+    input.read_to_string(&mut input_text).unwrap();
     let data: Vec<u8> = input_text
         .chars()
         .map(|c| c.to_digit(10).unwrap() as u8)
         .collect();
-    process(&data, 25, 6)
+    process(data, 25, 6)
 }
 
 pub fn star_two(mut input: impl BufRead) -> String {
     let mut input_text = String::new();
-    input.read_to_string(&mut input_text);
+    input.read_to_string(&mut input_text).unwrap();
     let data: Vec<u8> = input_text
         .chars()
         .map(|c| c.to_digit(10).unwrap() as u8)
@@ -90,8 +92,6 @@ pub fn star_two(mut input: impl BufRead) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
-
     use super::*;
 
     #[test]
@@ -100,7 +100,7 @@ mod tests {
             .chars()
             .map(|c| c.to_digit(10).unwrap() as u8)
             .collect();
-        assert_eq!(process(&data, 3, 2), 1);
+        assert_eq!(process(data, 3, 2), 1);
     }
 
     #[test]
