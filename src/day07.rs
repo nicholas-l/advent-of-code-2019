@@ -1,5 +1,42 @@
+use std::io::BufRead;
+
 use itertools::Itertools;
-use std::fs;
+
+fn find_highest_output(codes: &mut Vec<isize>) -> (isize, isize, isize, isize, isize, isize) {
+    let mut highest_output = (-1, -1, -1, -1, -1, 0);
+    for a in (0..5).permutations(5) {
+        let mut input = vec![a[0], 0];
+        let (_, output) = process(&mut codes.clone(), 0, &mut input).unwrap();
+        let mut input = vec![a[1], output];
+        let (_, output) = process(&mut codes.clone(), 0, &mut input).unwrap();
+        let mut input = vec![a[2], output];
+        let (_, output) = process(&mut codes.clone(), 0, &mut input).unwrap();
+        let mut input = vec![a[3], output];
+        let (_, output) = process(&mut codes.clone(), 0, &mut input).unwrap();
+        let mut input = vec![a[4], output];
+        let (_, output) = process(&mut codes.clone(), 0, &mut input).unwrap();
+        if output > highest_output.5 {
+            highest_output = (a[0], a[1], a[2], a[3], a[4], output);
+            // println!("{:?}", highest_output);
+        }
+    }
+    highest_output
+}
+
+pub fn star_one(input: impl BufRead) -> usize {
+    let mut codes: Vec<isize> = input
+        .split(b',')
+        .map(|v| {
+            // println!("{}", &v);
+            String::from_utf8(v.unwrap())
+                .unwrap()
+                .parse::<isize>()
+                .unwrap()
+        })
+        .collect();
+    let (.., highest_output) = find_highest_output(&mut codes);
+    highest_output as usize
+}
 
 // TODO change to getting the input values.
 fn process(
@@ -105,10 +142,10 @@ fn run_feedback(program: &mut Vec<isize>, settings: &[isize]) -> isize {
     loop {
         let (ref mut program, index) = &mut programs[i];
         let mut input = vec![last_output];
-        if index == 0 {
+        if index == &0 {
             input.insert(0, settings[i]);
         }
-        match process(program, index, &mut input) {
+        match process(program, *index, &mut input) {
             Some((index, output)) => {
                 last_output = output;
                 programs[i].1 = index;
@@ -122,7 +159,7 @@ fn run_feedback(program: &mut Vec<isize>, settings: &[isize]) -> isize {
     }
 }
 
-fn find_highest_output(
+fn find_highest_output2(
     codes: &mut Vec<isize>,
     min: isize,
     max: isize,
@@ -136,37 +173,40 @@ fn find_highest_output(
             highest_output = (a[0], a[1], a[2], a[3], a[4], output);
         }
     }
-    return highest_output;
+    highest_output
 }
 
-fn main() {
-    let mut codes: Vec<isize> = fs::read_to_string("./input.txt")
-        .unwrap()
-        .split(",")
+pub fn star_two(input: impl BufRead) -> usize {
+    // !FIXME
+    let mut codes: Vec<isize> = input
+        .split(b',')
         .map(|v| {
             // println!("{}", &v);
-            v.parse::<isize>().unwrap()
+            String::from_utf8(v.unwrap())
+                .unwrap()
+                .parse::<isize>()
+                .unwrap()
         })
         .collect();
-    let (.., highest_output) = find_highest_output(&mut codes, 5, 9);
-    println!("{:?}", highest_output);
+    let (.., highest_output) = find_highest_output2(&mut codes, 5, 9);
+    highest_output as usize
 }
 
 #[cfg(test)]
-mod tests {
+mod tests2 {
     use super::*;
 
     #[test]
     fn test_program_1() {
         let mut program = vec![1101, 100, -1, 4, 0];
-        let output = process(&mut program, 0, &mut vec![1]);
+        let _output = process(&mut program, 0, &mut vec![1]);
         assert_eq!(program, vec!(1101, 100, -1, 4, 99));
     }
 
     #[test]
     fn test_program_1_2() {
         let mut program = vec![1002, 4, 3, 4, 33];
-        let output = process(&mut program, 0, &mut vec![1]);
+        let _output = process(&mut program, 0, &mut vec![1]);
         assert_eq!(program, vec!(1002, 4, 3, 4, 99));
     }
 
@@ -180,14 +220,14 @@ mod tests {
     #[test]
     fn test_program_2_2() {
         let mut program = vec![1002, 4, 3, 4, 33];
-        let output = process(&mut program, 0, &mut vec![5]);
+        let _output = process(&mut program, 0, &mut vec![5]);
         assert_eq!(program, vec!(1002, 4, 3, 4, 99));
     }
 
     #[test]
     fn test_find_highest_output() {
         assert_eq!(
-            find_highest_output(
+            find_highest_output2(
                 &mut vec![3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0],
                 0,
                 4
@@ -203,8 +243,50 @@ mod tests {
             28, 1005, 28, 6, 99, 0, 0, 5,
         ];
         assert_eq!(
-            find_highest_output(&mut program, 5, 9),
+            find_highest_output2(&mut program, 5, 9),
             (9, 8, 7, 6, 5, 139629729)
+        );
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_program_1() {
+        let mut program = vec![1101, 100, -1, 4, 0];
+        let _output = process(&mut program, 0, &mut vec![1]);
+        assert_eq!(program, vec!(1101, 100, -1, 4, 99));
+    }
+
+    #[test]
+    fn test_program_1_2() {
+        let mut program = vec![1002, 4, 3, 4, 33];
+        let _output = process(&mut program, 0, &mut vec![1]);
+        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
+    }
+
+    #[test]
+    fn test_program_2() {
+        let mut program = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
+        let output = process(&mut program, 0, &mut vec![5]);
+        assert_eq!(output.unwrap().1, 1);
+    }
+
+    #[test]
+    fn test_program_2_2() {
+        let mut program = vec![1002, 4, 3, 4, 33];
+        let _output = process(&mut program, 0, &mut vec![5]);
+        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
+    }
+
+    #[test]
+    fn test_find_highest_output() {
+        assert_eq!(
+            find_highest_output(&mut vec![
+                3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0
+            ]),
+            (4, 3, 2, 1, 0, 43210)
         );
     }
 }
