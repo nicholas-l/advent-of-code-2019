@@ -5,6 +5,7 @@ pub mod day04;
 pub mod day05;
 pub mod day06;
 pub mod day07;
+pub mod day08;
 
 #[cfg(test)]
 mod tests {
@@ -76,5 +77,13 @@ mod tests {
         assert_eq!(day07::star_one(get_data(&filepath)), 46014);
 
         assert_eq!(day07::star_two(get_data(&filepath)), 19581200);
+    }
+
+    #[test]
+    fn day08_complete() {
+        let filepath = Path::new("data").join("day08.txt");
+        assert_eq!(day08::star_one(get_data(&filepath)), 1935);
+
+        assert_eq!(day08::star_two(get_data(&filepath)), "CFLUL");
     }
 }
