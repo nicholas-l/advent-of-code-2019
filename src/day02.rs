@@ -1,72 +1,42 @@
 use std::io::BufRead;
 
 pub fn star_one(input: impl BufRead) -> usize {
-    let mut codes: Vec<usize> = input
+    let mut codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             String::from_utf8(v.unwrap())
                 .unwrap()
-                .parse::<usize>()
+                .parse::<isize>()
                 .unwrap()
         })
         .collect();
-    let mut index = 0;
-    while codes[index] != 99 {
-        let input1_index = codes[index + 1];
-        let input2_index = codes[index + 2];
-        let output_index = codes[index + 3];
-        match codes[index] {
-            1 => {
-                codes[output_index] = codes[input1_index] + codes[input2_index];
-            }
-            2 => {
-                codes[output_index] = codes[input1_index] * codes[input2_index];
-            }
-            _ => {
-                todo!()
-            }
-        }
-        index += 4;
-    }
-    codes[0]
-}
-
-fn process(codes: &mut Vec<usize>) -> usize {
-    let mut index = 0;
-    while codes[index] != 99 {
-        let output_index = codes[index + 3];
-        match codes[index] {
-            1 => codes[output_index] = codes[codes[index + 1]] + codes[codes[index + 2]],
-            2 => codes[output_index] = codes[codes[index + 1]] * codes[codes[index + 2]],
-            99 => break,
-            _ => panic!(),
-        }
-        index += 4;
-    }
-    codes[0]
+    let mut input = Vec::new();
+    let (_index, _output, _halted) = super::process(&mut codes, 0, &mut input, true);
+    codes[0] as usize
 }
 
 pub fn star_two(input: impl BufRead) -> usize {
-    let codes: Vec<usize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             String::from_utf8(v.unwrap())
                 .unwrap()
-                .parse::<usize>()
+                .parse::<isize>()
                 .unwrap()
         })
         .collect();
     // println!("{:?}", codes);
     for noun in 1..100 {
         for verb in 1..100 {
-            let mut code = codes.clone();
-            code[1] = noun;
-            code[2] = verb;
-            let output = process(&mut code);
+            let mut program = codes.clone();
+            let mut input = Vec::new();
+            program[1] = noun;
+            program[2] = verb;
+            let (_index, _output, _halted) = super::process(&mut program, 0, &mut input, true);
 
-            if output == 19690720 {
+            if program[0] == 19690720 {
                 println!("{} {}", noun, verb);
-                return 100 * noun + verb;
+                return (100 * noun + verb) as usize;
             }
         }
     }
