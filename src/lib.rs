@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 pub mod day01;
 pub mod day02;
 pub mod day03;
@@ -20,7 +22,7 @@ pub fn process(
     let mut found_99 = false;
     let get_parameter = |program: &[isize], op, pos: usize| {
         // println!("{:?} {} {} {}", program, op, pos, (program[op] / (10*10_isize.pow(pos as u32))) % 10);
-        let mode = (program[op] / (10 * 10_isize.pow(pos as u32))) % 10;
+        let mode = (program[op] / 10_isize.pow((pos + 1).try_into().unwrap())) % 10;
         if mode == 1 {
             program[op + pos]
         } else {
@@ -33,6 +35,8 @@ pub fn process(
                 let output_index = codes[index + 3] as usize;
                 let input1 = get_parameter(&codes, index, 1);
                 let input2 = get_parameter(&codes, index, 2);
+                // assert!(input1 >= 0);
+                // assert!(input2 >= 0);
                 codes[output_index] = input1 + input2;
                 index += 4;
             }
@@ -54,7 +58,6 @@ pub fn process(
                 output.push(output_parameter);
                 index += 2;
                 if stop_if_output {
-                    index += 2;
                     break;
                 }
             }
@@ -183,7 +186,7 @@ mod tests {
     fn day07_complete() {
         let filepath = Path::new("data").join("day07.txt");
         assert_eq!(day07::star_one(get_data(&filepath)), 46014);
-
+        println!("Completed 1");
         assert_eq!(day07::star_two(get_data(&filepath)), 19581200);
     }
 
