@@ -8,11 +8,22 @@ pub mod day05;
 pub mod day06;
 pub mod day07;
 pub mod day08;
-// pub mod day09;
+pub mod day09;
+
+fn write(program: &mut Vec<isize>, index: usize, data: isize) {
+    if index >= program.len() {
+        program.resize(index + 1, 0)
+    }
+    program[index] = data;
+}
+
+fn read(program: &[isize], index: usize) -> isize {
+    *program.get(index).unwrap_or(&0)
+}
 
 // TODO change to getting the input values.
 pub fn process(
-    codes: &mut [isize],
+    codes: &mut Vec<isize>,
     start_index: usize,
     input: &mut Vec<isize>,
     stop_if_output: bool,
@@ -20,41 +31,47 @@ pub fn process(
     let mut index = start_index;
     let mut output = vec![];
     let mut found_99 = false;
-    let get_parameter = |program: &[isize], op, pos: usize| {
+    let mut relative_base: isize = 0;
+
+    let get_index = |program: &[isize], op, pos: usize, relative_base| {
         // println!("{:?} {} {} {}", program, op, pos, (program[op] / (10*10_isize.pow(pos as u32))) % 10);
         let mode = (program[op] / 10_isize.pow((pos + 1).try_into().unwrap())) % 10;
-        if mode == 1 {
-            program[op + pos]
-        } else {
-            program[program[op + pos] as usize]
+        match mode {
+            0 => program[op + pos] as usize,
+            1 => op + pos,
+            2 => (relative_base + program[op + pos]) as usize,
+            _ => panic!("Mode {} not supported", mode),
         }
+    };
+    let get_parameter = |program: &[isize], op, pos: usize, relative_base| {
+        // println!("{:?} {} {} {}", program, op, pos, (program[op] / (10*10_isize.pow(pos as u32))) % 10);
+        read(program, get_index(program, op, pos, relative_base))
     };
     while index < codes.len() {
         match codes[index] % 100 {
             1 => {
-                let output_index = codes[index + 3] as usize;
-                let input1 = get_parameter(&codes, index, 1);
-                let input2 = get_parameter(&codes, index, 2);
+                let input1 = get_parameter(codes, index, 1, relative_base);
+                let input2 = get_parameter(codes, index, 2, relative_base);
+                let output_index = get_index(codes, index, 3, relative_base);
                 // assert!(input1 >= 0);
                 // assert!(input2 >= 0);
-                codes[output_index] = input1 + input2;
+                write(codes, output_index, input1 + input2);
                 index += 4;
             }
             2 => {
-                let output_index = codes[index + 3] as usize;
-                let input1 = get_parameter(&codes, index, 1);
-                let input2 = get_parameter(&codes, index, 2);
-                codes[output_index] = input1 * input2;
+                let input1 = get_parameter(codes, index, 1, relative_base);
+                let input2 = get_parameter(codes, index, 2, relative_base);
+                let output_index = get_index(codes, index, 3, relative_base);
+                write(codes, output_index, input1 * input2);
                 index += 4;
             }
             3 => {
-                let output_index = codes[index + 1] as usize;
+                let output_index = get_index(codes, index, 1, relative_base);
                 codes[output_index] = input.remove(0);
                 index += 2
             }
             4 => {
-                let output_parameter = get_parameter(&codes, index, 1);
-                // output.push(output_parameter);
+                let output_parameter = get_parameter(codes, index, 1, relative_base);
                 output.push(output_parameter);
                 index += 2;
                 if stop_if_output {
@@ -63,8 +80,8 @@ pub fn process(
             }
             //Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
             5 => {
-                let input1 = get_parameter(&codes, index, 1);
-                let input2 = get_parameter(&codes, index, 2);
+                let input1 = get_parameter(codes, index, 1, relative_base);
+                let input2 = get_parameter(codes, index, 2, relative_base);
                 if input1 > 0 {
                     index = input2 as usize
                 } else {
@@ -73,8 +90,8 @@ pub fn process(
             }
             // Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
             6 => {
-                let input1 = get_parameter(&codes, index, 1);
-                let input2 = get_parameter(&codes, index, 2);
+                let input1 = get_parameter(codes, index, 1, relative_base);
+                let input2 = get_parameter(codes, index, 2, relative_base);
                 if input1 == 0 {
                     index = input2 as usize
                 } else {
@@ -83,9 +100,9 @@ pub fn process(
             }
             // Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             7 => {
-                let output_index = codes[index + 3] as usize;
-                let input1 = get_parameter(&codes, index, 1);
-                let input2 = get_parameter(&codes, index, 2);
+                let input1 = get_parameter(codes, index, 1, relative_base);
+                let input2 = get_parameter(codes, index, 2, relative_base);
+                let output_index = get_index(codes, index, 3, relative_base);
                 if input1 < input2 {
                     codes[output_index] = 1;
                 } else {
@@ -95,15 +112,21 @@ pub fn process(
             }
             // Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             8 => {
-                let output_index = codes[index + 3] as usize;
-                let input1 = get_parameter(&codes, index, 1);
-                let input2 = get_parameter(&codes, index, 2);
+                let input1 = get_parameter(codes, index, 1, relative_base);
+                let input2 = get_parameter(codes, index, 2, relative_base);
+                let output_index = get_index(codes, index, 3, relative_base);
+
                 if input1 == input2 {
-                    codes[output_index] = 1;
+                    write(codes, output_index, 1);
                 } else {
-                    codes[output_index] = 0;
+                    write(codes, output_index, 0);
                 }
                 index += 4
+            }
+            9 => {
+                let input1 = get_parameter(codes, index, 1, relative_base);
+                relative_base += input1;
+                index += 2
             }
             99 => {
                 found_99 = true;
@@ -196,5 +219,12 @@ mod tests {
         assert_eq!(day08::star_one(get_data(&filepath)), 1935);
 
         assert_eq!(day08::star_two(get_data(&filepath)), "CFLUL");
+    }
+    #[test]
+    fn day09_complete() {
+        let filepath = Path::new("data").join("day09.txt");
+        assert_eq!(day09::star_one(get_data(&filepath)), 2171728567);
+
+        assert_eq!(day09::star_two(get_data(&filepath)), 49815);
     }
 }
