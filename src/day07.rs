@@ -136,8 +136,8 @@ pub fn star_one(input: impl BufRead) -> usize {
 //     // return output;
 // }
 
-fn run_feedback(program: &Vec<isize>, settings: &[isize]) -> isize {
-    let mut programs = vec![(program.clone(), 0); settings.len()]; // (program, index)
+fn run_feedback(program: &[isize], settings: &[isize]) -> isize {
+    let mut programs = vec![(program.to_owned(), 0); settings.len()]; // (program, index)
     let mut last_output = 0;
     let mut i = 0;
     loop {
