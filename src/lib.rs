@@ -9,6 +9,7 @@ pub mod day06;
 pub mod day07;
 pub mod day08;
 pub mod day09;
+pub mod day10;
 
 fn write(program: &mut Vec<isize>, index: usize, data: isize) {
     if index >= program.len() {
@@ -226,5 +227,13 @@ mod tests {
         assert_eq!(day09::star_one(get_data(&filepath)), 2171728567);
 
         assert_eq!(day09::star_two(get_data(&filepath)), 49815);
+    }
+
+    #[test]
+    fn day10_complete() {
+        let filepath = Path::new("data").join("day10.txt");
+        assert_eq!(day10::star_one(get_data(&filepath)), 517);
+
+        assert_eq!(day10::star_two(get_data(&filepath)), 49815);
     }
 }
