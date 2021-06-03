@@ -232,8 +232,8 @@ mod tests {
     #[test]
     fn day10_complete() {
         let filepath = Path::new("data").join("day10.txt");
-        assert_eq!(day10::star_one(get_data(&filepath)), 517);
+        assert_eq!(day10::star_one(get_data(&filepath)), 319);
 
-        assert_eq!(day10::star_two(get_data(&filepath)), 49815);
+        assert_eq!(day10::star_two(get_data(&filepath)), 517);
     }
 }
