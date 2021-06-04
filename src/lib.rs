@@ -10,6 +10,7 @@ pub mod day07;
 pub mod day08;
 pub mod day09;
 pub mod day10;
+pub mod day11;
 
 fn write(program: &mut Vec<isize>, index: usize, data: isize) {
     if index >= program.len() {
@@ -22,6 +23,157 @@ fn read(program: &[isize], index: usize) -> isize {
     *program.get(index).unwrap_or(&0)
 }
 
+struct IntCode<'a> {
+    program: &'a mut Vec<isize>,
+    input: Vec<isize>,
+    index: usize,
+    output: Vec<isize>,
+    // halted: bool,
+    relative_base: isize,
+}
+
+impl IntCode<'_> {
+    fn new(program: &'_ mut Vec<isize>, start_index: usize, input: Vec<isize>) -> IntCode<'_> {
+        IntCode {
+            program,
+            input,
+            index: start_index,
+            output: Vec::new(),
+            // halted: false,
+            relative_base: 0,
+        }
+    }
+
+    // fn input(&self) {
+    //     self.input
+    // }
+
+    fn set_input(&mut self, input: Vec<isize>) {
+        self.input = input;
+    }
+    fn len(&self) -> usize {
+        self.program.len()
+    }
+    fn write(&mut self, index: usize, data: isize) {
+        if index >= self.program.len() {
+            self.program.resize(index + 1, 0)
+        }
+        self.program[index] = data;
+    }
+
+    fn get_index(&self, op: usize, pos: usize) -> usize {
+        let mode = (self.program[op] / 10_isize.pow((pos + 1).try_into().unwrap())) % 10;
+        match mode {
+            0 => self.program[op + pos] as usize,
+            1 => op + pos,
+            2 => (self.relative_base + self.program[op + pos]) as usize,
+            _ => panic!("Mode {} not supported", mode),
+        }
+    }
+    fn take_output(&mut self) -> Vec<isize> {
+        self.output.drain(..).collect()
+    }
+    fn get_parameter(&self, op: usize, pos: usize) -> isize {
+        read(&self.program, self.get_index(op, pos))
+    }
+    fn run(&mut self, stop_if_output: bool) -> (usize, bool) {
+        let mut found_99 = false;
+        while self.index < self.len() {
+            match self.program[self.index] % 100 {
+                1 => {
+                    let input1 = self.get_parameter(self.index, 1);
+                    let input2 = self.get_parameter(self.index, 2);
+                    let output_index = self.get_index(self.index, 3);
+                    // assert!(input1 >= 0);
+                    // assert!(input2 >= 0);
+                    self.write(output_index, input1 + input2);
+                    self.index += 4;
+                }
+                2 => {
+                    let input1 = self.get_parameter(self.index, 1);
+                    let input2 = self.get_parameter(self.index, 2);
+                    let output_index = self.get_index(self.index, 3);
+                    self.write(output_index, input1 * input2);
+                    self.index += 4;
+                }
+                3 => {
+                    let output_index = self.get_index(self.index, 1);
+                    let data = self.input.remove(0);
+                    self.write(output_index, data);
+                    self.index += 2
+                }
+                4 => {
+                    let output_parameter = self.get_parameter(self.index, 1);
+                    self.output.push(output_parameter);
+                    self.index += 2;
+                    if stop_if_output {
+                        break;
+                    }
+                }
+                //Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+                5 => {
+                    let input1 = self.get_parameter(self.index, 1);
+                    let input2 = self.get_parameter(self.index, 2);
+                    if input1 > 0 {
+                        self.index = input2 as usize
+                    } else {
+                        self.index += 3
+                    }
+                }
+                // Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+                6 => {
+                    let input1 = self.get_parameter(self.index, 1);
+                    let input2 = self.get_parameter(self.index, 2);
+                    if input1 == 0 {
+                        self.index = input2 as usize
+                    } else {
+                        self.index += 3
+                    }
+                }
+                // Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+                7 => {
+                    let input1 = self.get_parameter(self.index, 1);
+                    let input2 = self.get_parameter(self.index, 2);
+                    let output_index = self.get_index(self.index, 3);
+                    if input1 < input2 {
+                        self.write(output_index, 1);
+                    } else {
+                        self.write(output_index, 0);
+                    }
+                    self.index += 4;
+                }
+                // Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+                8 => {
+                    let input1 = self.get_parameter(self.index, 1);
+                    let input2 = self.get_parameter(self.index, 2);
+                    let output_index = self.get_index(self.index, 3);
+
+                    if input1 == input2 {
+                        self.write(output_index, 1);
+                    } else {
+                        self.write(output_index, 0);
+                    }
+                    self.index += 4
+                }
+                9 => {
+                    let input1 = self.get_parameter(self.index, 1);
+                    self.relative_base += input1;
+                    self.index += 2
+                }
+                // Halt program
+                99 => {
+                    found_99 = true;
+                    break; // return None,
+                }
+                x => {
+                    println!("{:?} [{}]: {}", self.program, self.index, x);
+                    panic!()
+                }
+            }
+        }
+        (self.index, found_99)
+    }
+}
 // TODO change to getting the input values.
 pub fn process(
     codes: &mut Vec<isize>,
@@ -129,6 +281,7 @@ pub fn process(
                 relative_base += input1;
                 index += 2
             }
+            // Halt program
             99 => {
                 found_99 = true;
                 break; // return None,
@@ -235,5 +388,20 @@ mod tests {
         assert_eq!(day10::star_one(get_data(&filepath)), 319);
 
         assert_eq!(day10::star_two(get_data(&filepath)), 517);
+    }
+
+    #[test]
+    fn day11_complete() {
+        let filepath = Path::new("data").join("day11.txt");
+        assert_eq!(day11::star_one(get_data(&filepath)), 2392);
+
+        let expected = "\
+        .####..##..###..#..#.#....####.#..#.####...\n\
+        .#....#..#.#..#.#..#.#....#....#..#.#......\n\
+        .###..#....###..####.#....###..#..#.###....\n\
+        .#....#.##.#..#.#..#.#....#....#..#.#......\n\
+        .#....#..#.#..#.#..#.#....#....#..#.#......\n\
+        .####..###.###..#..#.####.####..##..####...";
+        assert_eq!(day11::star_two(get_data(&filepath)), expected);
     }
 }
