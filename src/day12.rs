@@ -11,7 +11,7 @@ use nom::{
     sequence::tuple,
     IResult,
 };
-use std::collections::HashSet;
+use num::Integer;
 use std::io::BufRead;
 use std::ops::Add;
 use std::ops::AddAssign;
@@ -196,23 +196,60 @@ pub fn star_one(mut input: impl BufRead) -> usize {
     system.energy() as usize
 }
 
+fn get_axis(velocity: &Velocity, axis: usize) -> isize {
+    match axis {
+        0 => velocity.x,
+        1 => velocity.y,
+        2 => velocity.z,
+        _ => panic!("Invlaid axis"),
+    }
+}
+
+fn get_axis_position(position: &Position, axis: usize) -> isize {
+    match axis {
+        0 => position.x,
+        1 => position.y,
+        2 => position.z,
+        _ => panic!("Invlaid axis"),
+    }
+}
+
 pub fn star_two(mut input: impl BufRead) -> usize {
     let mut input_text = String::new();
     input.read_to_string(&mut input_text).unwrap();
     let mut system = input_text.parse::<System>().unwrap();
-    let mut states = HashSet::new();
+    let starting_system = system.clone();
+    // Period of complete change of each axis.
+    let mut periods = vec![None; 3];
     let mut steps = 0;
-    while !states.contains(&system) {
-        states.insert(system.clone());
+    while periods.iter().any(|x| x.is_none()) {
         system.step();
         steps += 1;
+
+        for (i, p) in periods.iter_mut().enumerate() {
+            if p.is_none() // We havent found the period of this axis.
+            // is all velocities in axis equal to 0
+            && system.velocities.iter().all(|v| get_axis(v, i) == 0)
+            && system.positions
+            .iter()
+            .zip(starting_system.positions.iter())
+            .all(|(position, starting_position)| get_axis_position(position, i) == get_axis_position(starting_position,i))
+            {
+                p.replace(steps);
+            }
+        }
     }
 
-    steps
+    let first = periods[0].unwrap();
+    periods
+        .into_iter()
+        .fold(first, |lcm, p| lcm.lcm(&p.unwrap()))
 }
 
 #[cfg(test)]
 mod tests {
+    use std::io::Cursor;
+
     use super::*;
 
     const INPUT: &str = "\
@@ -337,5 +374,7 @@ mod tests {
     fn test_star_one() {}
 
     #[test]
-    fn test_star_two() {}
+    fn test_star_two() {
+        assert_eq!(star_two(Cursor::new(INPUT)), 2772);
+    }
 }
