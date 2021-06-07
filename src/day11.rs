@@ -45,7 +45,7 @@ fn paint(mut codes: Vec<isize>, start_panel: Colour) -> HashMap<(isize, isize), 
     while !halted {
         let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];
         computer.set_input(input);
-        let data = computer.run(true);
+        let data = computer.run(1);
         halted = data.1;
         if halted {
             break;
@@ -54,7 +54,7 @@ fn paint(mut codes: Vec<isize>, start_panel: Colour) -> HashMap<(isize, isize), 
         let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];
         computer.set_input(input);
         // Direction
-        let data = computer.run(true);
+        let data = computer.run(1);
         direction = match computer.take_output()[0] {
             0 => (direction + 90).rem_euclid(360),
             1 => (direction - 90).rem_euclid(360),

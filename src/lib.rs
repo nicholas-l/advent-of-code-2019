@@ -12,6 +12,7 @@ pub mod day09;
 pub mod day10;
 pub mod day11;
 pub mod day12;
+pub mod day13;
 
 struct IntCode<'a> {
     program: &'a mut Vec<isize>,
@@ -71,7 +72,7 @@ impl IntCode<'_> {
     fn get_parameter(&self, op: usize, pos: usize) -> isize {
         self.read(self.get_index(op, pos))
     }
-    fn run(&mut self, stop_if_output: bool) -> (usize, bool) {
+    fn run(&mut self, output_max: usize) -> (usize, bool) {
         let mut found_99 = false;
         while self.index < self.len() {
             match self.program[self.index] % 100 {
@@ -101,7 +102,7 @@ impl IntCode<'_> {
                     let output_parameter = self.get_parameter(self.index, 1);
                     self.output.push(output_parameter);
                     self.index += 2;
-                    if stop_if_output {
+                    if output_max > 0 && self.output.len() >= output_max {
                         break;
                     }
                 }
@@ -178,7 +179,7 @@ pub fn process(
 ) -> (usize, Vec<isize>, bool) {
     let mut computer = IntCode::new(codes, start_index, input.to_vec());
 
-    let (index, found_99) = computer.run(stop_if_output);
+    let (index, found_99) = computer.run(if stop_if_output { 1 } else { 0 });
 
     (index, computer.take_output(), found_99)
 }
@@ -299,5 +300,13 @@ mod tests {
         assert_eq!(day12::star_one(get_data(&filepath)), 8742);
 
         assert_eq!(day12::star_two(get_data(&filepath)), 325433763467176);
+    }
+
+    #[test]
+    fn day13_complete() {
+        let filepath = Path::new("data").join("day13.txt");
+        assert_eq!(day13::star_one(get_data(&filepath)), 335);
+
+        assert_eq!(day13::star_two(get_data(&filepath)), 15706);
     }
 }
