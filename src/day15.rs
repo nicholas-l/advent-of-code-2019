@@ -1,4 +1,7 @@
-use std::{collections::{HashMap, HashSet, VecDeque}, io::BufRead};
+use std::{
+    collections::{HashMap, HashSet, VecDeque},
+    io::BufRead,
+};
 
 use crate::IntCode;
 
