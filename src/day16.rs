@@ -17,6 +17,7 @@ fn run(codes: Vec<isize>, loops: usize) -> Vec<isize> {
                 phase
                     .iter()
                     .zip(multiplier)
+                    .filter(|x| x.1 != 0)
                     .map(|(a, b)| a * b)
                     // .inspect(|d| println!("{}", d))
                     .sum::<isize>()
@@ -52,12 +53,22 @@ pub fn star_two(mut input: impl BufRead) -> usize {
         .map(|b| b.to_digit(10).unwrap() as isize)
         .collect();
     let new_length = 10000 * codes.len();
-    let input_phase = codes.iter().cycle().take(new_length).copied().collect();
+    let input_phase: Vec<isize> = codes.iter().cycle().take(new_length).copied().collect();
 
-    let output = run(input_phase, 100);
-    let offset = convert_number(&output[..7]);
-    convert_number(&output[offset..offset + 8]);
-    0
+    let offset = convert_number(&input_phase[..7]);
+    let mut data = input_phase[offset..].to_vec();
+    for _i in 0..100 {
+        let t: Vec<isize> = data
+            .iter()
+            .rev()
+            .scan(0, |state, x| {
+                *state += x;
+                Some((*state) % 10)
+            })
+            .collect();
+        data = t.into_iter().rev().collect();
+    }
+    convert_number(&data[..8])
 }
 
 #[cfg(test)]
@@ -102,19 +113,19 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn test_star_two() {
-    //     assert_eq!(
-    //         star_two(Cursor::new(b"03036732577212944063491565474664")),
-    //         84462026
-    //     );
-    //     assert_eq!(
-    //         star_two(Cursor::new("02935109699940807407585447034323")),
-    //         78725270
-    //     );
-    //     assert_eq!(
-    //         star_two(Cursor::new("03081770884921959731165446850517")),
-    //         53553731
-    //     );
-    // }
+    #[test]
+    fn test_star_two() {
+        assert_eq!(
+            star_two(Cursor::new(b"03036732577212944063491565474664")),
+            84462026
+        );
+        assert_eq!(
+            star_two(Cursor::new("02935109699940807407585447034323")),
+            78725270
+        );
+        assert_eq!(
+            star_two(Cursor::new("03081770884921959731165446850517")),
+            53553731
+        );
+    }
 }
