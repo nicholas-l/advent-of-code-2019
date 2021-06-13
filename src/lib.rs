@@ -16,6 +16,7 @@ pub mod day13;
 pub mod day14;
 pub mod day15;
 pub mod day16;
+pub mod day17;
 
 struct IntCode<'a> {
     program: &'a mut Vec<isize>,
@@ -335,5 +336,13 @@ mod tests {
         assert_eq!(day16::star_one(get_data(&filepath)), 84487724);
 
         assert_eq!(day16::star_two(get_data(&filepath)), 84692524);
+    }
+
+    #[test]
+    fn day17_complete() {
+        let filepath = Path::new("data").join("day17.txt");
+        assert_eq!(day17::star_one(get_data(&filepath)), 6000);
+
+        assert_eq!(day17::star_two(get_data(&filepath)), 807320);
     }
 }
