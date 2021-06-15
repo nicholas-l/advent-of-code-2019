@@ -209,16 +209,12 @@ fn dijkstra(
         }
 
         if cost <= *costs.get(&symbol).unwrap_or(&usize::MAX) {
-            let locations = graph
-                .get(&symbol)
-                .unwrap()
-                .iter()
-                .filter(|(symbol, _)| {
-                    if let Space::Door(d) = symbol {
-                        return keys.contains(&d);
-                    }
-                    true
-                });
+            let locations = graph.get(&symbol).unwrap().iter().filter(|(symbol, _)| {
+                if let Space::Door(d) = symbol {
+                    return keys.contains(&d);
+                }
+                true
+            });
             for &(next_symbol, next_cost) in locations {
                 let new_cost = next_cost + cost;
                 if new_cost < *costs.get(&next_symbol).unwrap_or(&usize::MAX) {
@@ -270,13 +266,13 @@ pub fn star_one(input: impl BufRead) -> usize {
                 Space::Empty => {}
                 Space::Wall => {}
                 Space::Door(_) => {
-                    graph.insert(c.clone(), get_acessible_2(&data, &position));
+                    graph.insert(*c, get_acessible_2(&data, &position));
                 }
                 Space::Key(_) => {
-                    graph.insert(c.clone(), get_acessible_2(&data, &position));
+                    graph.insert(*c, get_acessible_2(&data, &position));
                 }
                 Space::Entrance => {
-                    graph.insert(c.clone(), get_acessible_2(&data, &position));
+                    graph.insert(*c, get_acessible_2(&data, &position));
                 }
             }
         }
