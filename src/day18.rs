@@ -15,6 +15,7 @@ enum Space {
     Door(char),
     Key(char),
     Entrance,
+    Robot(usize),
 }
 
 impl From<char> for Space {
@@ -56,7 +57,7 @@ fn get_acessible(
         if !visited.contains(&pos) {
             visited.insert(pos);
             match map[pos.1][pos.0] {
-                Space::Empty | Space::Entrance => {
+                Space::Empty | Space::Entrance | Space::Robot(_) => {
                     stack.extend(get_adjacent(&pos).map(|x| (x, steps + 1)));
                 }
                 Space::Wall => {}
@@ -106,7 +107,7 @@ fn get_acessible_2(map: &[Vec<Space>], position: &Position) -> Vec<(Space, usize
             if !visited.contains(&x) {
                 visited.insert(x);
                 match map[x.1][x.0] {
-                    Space::Empty | Space::Entrance => {
+                    Space::Empty | Space::Entrance | Space::Robot(_) => {
                         stack.push_back((x, steps + 1));
                     }
                     Space::Wall => {}
@@ -234,6 +235,32 @@ fn dijkstra(
         .collect()
 }
 
+fn create_graph(data: &[Vec<Space>]) -> HashMap<Space, Vec<(Space, usize)>> {
+    let mut graph = HashMap::new();
+    for (y, row) in data.iter().enumerate() {
+        for (x, c) in row.iter().enumerate() {
+            let position = (x, y);
+            match c {
+                Space::Empty => {}
+                Space::Wall => {}
+                Space::Door(_) => {
+                    graph.insert(*c, get_acessible_2(&data, &position));
+                }
+                Space::Key(_) => {
+                    graph.insert(*c, get_acessible_2(&data, &position));
+                }
+                Space::Entrance => {
+                    graph.insert(*c, get_acessible_2(&data, &position));
+                }
+                Space::Robot(_) => {
+                    graph.insert(*c, get_acessible_2(&data, &position));
+                }
+            }
+        }
+    }
+    graph
+}
+
 pub fn star_one(input: impl BufRead) -> usize {
     let data: Vec<Vec<Space>> = input
         .lines()
@@ -258,25 +285,7 @@ pub fn star_one(input: impl BufRead) -> usize {
             })
         })
         .collect();
-    let mut graph = HashMap::new();
-    for (y, row) in data.iter().enumerate() {
-        for (x, c) in row.iter().enumerate() {
-            let position = (x, y);
-            match c {
-                Space::Empty => {}
-                Space::Wall => {}
-                Space::Door(_) => {
-                    graph.insert(*c, get_acessible_2(&data, &position));
-                }
-                Space::Key(_) => {
-                    graph.insert(*c, get_acessible_2(&data, &position));
-                }
-                Space::Entrance => {
-                    graph.insert(*c, get_acessible_2(&data, &position));
-                }
-            }
-        }
-    }
+    let graph = create_graph(&data);
     println!(
         "Access: {:?}",
         get_acessible(&data, &entrance, &keys, &doors)
@@ -284,15 +293,111 @@ pub fn star_one(input: impl BufRead) -> usize {
     get_shortest(&graph, &Space::Entrance, key_symbols.len()).unwrap()
 }
 
+fn get_shortest_robots(
+    map: &HashMap<Space, Vec<(Space, usize)>>,
+    symbols: Vec<Space>,
+    needed_keys: usize,
+) -> Option<usize> {
+    let mut stack = Vec::new();
+
+    let mut costs: HashMap<(Vec<Space>, BTreeSet<char>), usize> = HashMap::new();
+    costs.insert((symbols.clone(), BTreeSet::new()), 0);
+
+    stack.push((0, symbols, BTreeSet::new()));
+
+    // Cache the result of dijstra method using the current position and the current keys as a cache key.
+    let mut cache: Cache = HashMap::new();
+
+    while let Some((cost, symbols, keys)) = stack.pop() {
+        if keys.len() == needed_keys {
+            return Some(cost);
+        }
+
+        if let Some(&lowest_cost) = costs.get(&(symbols.clone(), keys.clone())) {
+            if cost > lowest_cost {
+                continue;
+            }
+        }
+        for (i, &symbol) in symbols.iter().enumerate() {
+            let cached_entry = cache
+                .entry((symbol, keys.clone()))
+                .or_insert_with(|| dijkstra(map, &symbol, &keys));
+
+            // dbg!(&symbol);
+            // dbg!(&position);
+            // dbg!(&cached_entry);
+
+            for (next_symbol, next_cost) in cached_entry.iter() {
+                let mut next_keys = keys.clone();
+                if let Space::Key(k) = next_symbol {
+                    next_keys.insert(*k);
+                }
+                let mut next_symbols = symbols.clone();
+                next_symbols[i] = *next_symbol;
+                let next_steps = cost + next_cost;
+
+                let distances_entry = costs
+                    .entry((next_symbols.clone(), next_keys.clone()))
+                    .or_insert(usize::MAX);
+
+                if next_steps < *distances_entry {
+                    *distances_entry = next_steps;
+
+                    let next_state = (cost + next_cost, next_symbols, next_keys);
+
+                    stack.push(next_state);
+                }
+            }
+        }
+        // ToDo Change to better structure
+        stack.sort_by_cached_key(|x| Reverse(x.0));
+        // dbg!(&stack);
+    }
+
+    None
+}
+
 pub fn star_two(input: impl BufRead) -> usize {
-    let _data: Vec<Vec<Space>> = input
+    let mut data: Vec<Vec<Space>> = input
         .lines()
         .map(|v| {
             // println!("{:?}", v);
             v.unwrap().chars().map(|c| c.into()).collect()
         })
         .collect();
-    todo!()
+    let entrance = find_entrance(&data);
+    data[entrance.1][entrance.0] = Space::Wall;
+    data[entrance.1][entrance.0 - 1] = Space::Wall;
+    data[entrance.1][entrance.0 + 1] = Space::Wall;
+    data[entrance.1 - 1][entrance.0] = Space::Wall;
+    data[entrance.1 + 1][entrance.0] = Space::Wall;
+    data[entrance.1 - 1][entrance.0 - 1] = Space::Robot(0);
+    data[entrance.1 - 1][entrance.0 + 1] = Space::Robot(1);
+    data[entrance.1 + 1][entrance.0 - 1] = Space::Robot(2);
+    data[entrance.1 + 1][entrance.0 + 1] = Space::Robot(3);
+
+    let key_symbols: HashSet<char> = data
+        .iter()
+        .flat_map(|row| {
+            row.iter().filter_map(|c| {
+                if let Space::Key(v) = c {
+                    Some(*v)
+                } else {
+                    None
+                }
+            })
+        })
+        .collect();
+    let graph = create_graph(&data);
+
+    let symbols = vec![
+        Space::Robot(0),
+        Space::Robot(1),
+        Space::Robot(2),
+        Space::Robot(3),
+    ];
+
+    get_shortest_robots(&graph, symbols, key_symbols.len()).unwrap()
 }
 
 #[cfg(test)]
@@ -330,6 +435,14 @@ mod tests {
 ###g#h#i################
 ########################";
 
+    const INPUT_STAR_TWO1: &str = "#######
+#a.#Cd#
+##...##
+##.@.##
+##...##
+#cB#.b#
+#######";
+
     #[test]
     fn test_star_one() {
         assert_eq!(star_one(Cursor::new(INPUT2)), 86);
@@ -339,5 +452,7 @@ mod tests {
     }
 
     #[test]
-    fn test_star_two() {}
+    fn test_star_two() {
+        assert_eq!(star_two(Cursor::new(INPUT_STAR_TWO1)), 8);
+    }
 }
