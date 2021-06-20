@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::BufRead, cmp::Reverse};
+use std::{cmp::Reverse, collections::HashMap, io::BufRead};
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 enum Tile {
@@ -207,15 +207,13 @@ pub fn star_two(input: impl BufRead) -> usize {
             (_, Some(Tile::Teleport('A', 'A'))) => {}
             (level, Some(Tile::Teleport(a, b))) => {
                 let is_outer = x == 0 || y == 0 || x == (map[0].len() - 1) || y == (map.len() - 1);
-                if *costs[y][x].get(&level).unwrap_or(&usize::MAX) > steps && !(level == 0 && is_outer) {
+                if *costs[y][x].get(&level).unwrap_or(&usize::MAX) > steps
+                    && !(level == 0 && is_outer)
+                {
                     costs[y][x].insert(level, steps);
                     // add teleported position to stack
                     let new_positions = teleporter_positions.get(&map[y][x]).unwrap();
-                    let new_level = if is_outer {
-                        level - 1
-                    } else {
-                        level + 1
-                    };
+                    let new_level = if is_outer { level - 1 } else { level + 1 };
                     assert_eq!(new_positions.len(), 2, "Panic'd at {} {}", a, b);
                     let (new_x, new_y) = new_positions.iter().find(|&p| p != &(x, y)).unwrap();
                     costs[*new_y][*new_x].insert(new_level, steps + 1);
