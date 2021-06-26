@@ -370,6 +370,6 @@ mod tests {
         let filepath = Path::new("data").join("day20.txt");
         assert_eq!(day20::star_one(get_data(&filepath)), 668);
 
-        // assert_eq!(day20::star_two(get_data(&filepath)), 8071006);
+        assert_eq!(day20::star_two(get_data(&filepath)), 7778);
     }
 }

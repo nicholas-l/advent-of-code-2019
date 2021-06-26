@@ -1,4 +1,5 @@
 use std::{
+    cmp::Reverse,
     collections::{HashMap, HashSet, VecDeque},
     io::BufRead,
 };
@@ -7,6 +8,15 @@ use std::{
 enum Teleport {
     Inner(char, char),
     Outer(char, char),
+}
+
+impl Teleport {
+    fn get_chars(&self) -> (char, char) {
+        match self {
+            Teleport::Inner(a, b) => (*a, *b),
+            Teleport::Outer(a, b) => (*a, *b),
+        }
+    }
 }
 
 #[derive(Debug, Hash, PartialEq, Eq)]
@@ -101,6 +111,8 @@ fn get_graph(map: &[Vec<Tile>]) -> HashMap<&Teleport, HashMap<&Teleport, usize>>
         // println!()
     }
 
+    // dbg!(&teleporters);
+
     let mut graph = HashMap::new();
 
     for (from_tile, start) in &teleporters {
@@ -137,7 +149,7 @@ fn get_graph(map: &[Vec<Tile>]) -> HashMap<&Teleport, HashMap<&Teleport, usize>>
                                     if !visited.contains(&(n_x, n_y))
                                         && costs.get(to_tile).unwrap_or(&usize::MAX) > &steps
                                     {
-                                        costs.insert(to_tile, steps);
+                                        costs.insert(to_tile, steps + 1);
                                     }
                                 }
                             }
@@ -146,7 +158,13 @@ fn get_graph(map: &[Vec<Tile>]) -> HashMap<&Teleport, HashMap<&Teleport, usize>>
                 }
             }
         }
-        // TODO ocnnect outer to inner.
+        let to_tile = match from_tile {
+            Teleport::Inner(a, b) => teleporters.iter().find(|t| t.0 == &Teleport::Outer(*a, *b)),
+            Teleport::Outer(a, b) => teleporters.iter().find(|t| t.0 == &Teleport::Inner(*a, *b)),
+        };
+        if let Some(to_tile) = to_tile {
+            costs.insert(to_tile.0, 1);
+        }
 
         graph.insert(*from_tile, costs);
     }
@@ -235,7 +253,7 @@ pub fn star_one(input: impl BufRead) -> usize {
 
 pub fn star_two(input: impl BufRead) -> usize {
     let map_teleport = |(a, b), (x, y), (width, height)| {
-        if x == 0 || y == 0 || x == width || y == height {
+        if x == 0 || y == 0 || x == width - 1 || y == height - 1 {
             Tile::Teleport(Teleport::Outer(a, b))
         } else {
             Tile::Teleport(Teleport::Inner(a, b))
@@ -260,12 +278,57 @@ pub fn star_two(input: impl BufRead) -> usize {
         // println!()
     }
     let graph = get_graph(&map);
-    dbg!(graph);
+    dbg!(&graph);
 
-    let _end = teleporter_positions
-        .get(&Tile::Teleport(Teleport::Outer('Z', 'Z')))
-        .unwrap()[0];
-    0
+    let start = Teleport::Outer('A', 'A');
+
+    let mut costs = HashMap::new();
+
+    let mut stack = vec![(&start, 0, 0, vec![(&start, 0, 0)])];
+
+    while let Some((current_teleport, current_depth, current_cost, path)) = stack.pop() {
+        // dbg!((current_teleport, current_depth));
+        if current_teleport == &Teleport::Outer('Z', 'Z') && current_depth == 0 {
+            for (t, d, c) in path {
+                let (a, b) = t.get_chars();
+                println!("({}, {}) {} - {}", a, b, d, c);
+            }
+            return current_cost;
+        }
+        let cost = *costs
+            .get(&(current_depth, current_teleport))
+            .unwrap_or(&usize::MAX);
+        if cost >= current_cost {
+            costs.insert((current_depth, current_teleport), current_cost);
+            // dbg!(graph.get(&current_teleport));
+            for (next_teleport, &delta_cost) in graph.get(&current_teleport).unwrap() {
+                // dbg!(next_teleport);
+                // dbg!(matches!(current_teleport, Teleport::Outer(_, _)));
+                // dbg!(current_depth == 0);
+                // dbg!(delta_cost == 1);
+                if !(matches!(current_teleport, Teleport::Outer(_, _))
+                    && current_depth == 0
+                    && delta_cost == 1)
+                {
+                    let next_depth = if delta_cost == 1 {
+                        match next_teleport {
+                            Teleport::Outer(_, _) => current_depth + 1,
+                            Teleport::Inner(_, _) => current_depth - 1,
+                        }
+                    } else {
+                        current_depth
+                    };
+                    let new_cost = current_cost + delta_cost;
+                    let mut new_path = path.clone();
+                    new_path.push((next_teleport, next_depth, new_cost));
+                    stack.push((next_teleport, next_depth, new_cost, new_path));
+                }
+            }
+        }
+        stack.sort_by_cached_key(|x| Reverse(x.2));
+    }
+
+    unreachable!();
 }
 
 #[cfg(test)]
@@ -331,44 +394,44 @@ YN......#               VT..#....QG
            B   J   C               
            U   P   P               ";
 
-    /* const INPUT3: &str = "             Z L X W       C
-                 Z P Q B       K
-      ###########.#.#.#.#######.###############
-      #...#.......#.#.......#.#.......#.#.#...#
-      ###.#.#.#.#.#.#.#.###.#.#.#######.#.#.###
-      #.#...#.#.#...#.#.#...#...#...#.#.......#
-      #.###.#######.###.###.#.###.###.#.#######
-      #...#.......#.#...#...#.............#...#
-      #.#########.#######.#.#######.#######.###
-      #...#.#    F       R I       Z    #.#.#.#
-      #.###.#    D       E C       H    #.#.#.#
-      #.#...#                           #...#.#
-      #.###.#                           #.###.#
-      #.#....OA                       WB..#.#..ZH
-      #.###.#                           #.#.#.#
-    CJ......#                           #.....#
-      #######                           #######
-      #.#....CK                         #......IC
-      #.###.#                           #.###.#
-      #.....#                           #...#.#
-      ###.###                           #.#.#.#
-    XF....#.#                         RF..#.#.#
-      #####.#                           #######
-      #......CJ                       NM..#...#
-      ###.#.#                           #.###.#
-    RE....#.#                           #......RF
-      ###.###        X   X       L      #.#.#.#
-      #.....#        F   Q       P      #.#.#.#
-      ###.###########.###.#######.#########.###
-      #.....#...#.....#.......#...#.....#.#...#
-      #####.#.###.#######.#######.###.###.#.#.#
-      #.......#.......#.#.#.#.#...#...#...#.#.#
-      #####.###.#####.#.#.#.#.###.###.#.###.###
-      #.......#.....#.#...#...............#...#
-      #############.#.#.###.###################
-                   A O F   N
-                   A A D   M                     ";
-    */
+    const INPUT3: &str = "             Z L X W       C                 
+             Z P Q B       K                 
+  ###########.#.#.#.#######.###############  
+  #...#.......#.#.......#.#.......#.#.#...#  
+  ###.#.#.#.#.#.#.#.###.#.#.#######.#.#.###  
+  #.#...#.#.#...#.#.#...#...#...#.#.......#  
+  #.###.#######.###.###.#.###.###.#.#######  
+  #...#.......#.#...#...#.............#...#  
+  #.#########.#######.#.#######.#######.###  
+  #...#.#    F       R I       Z    #.#.#.#  
+  #.###.#    D       E C       H    #.#.#.#  
+  #.#...#                           #...#.#  
+  #.###.#                           #.###.#  
+  #.#....OA                       WB..#.#..ZH
+  #.###.#                           #.#.#.#  
+CJ......#                           #.....#  
+  #######                           #######  
+  #.#....CK                         #......IC
+  #.###.#                           #.###.#  
+  #.....#                           #...#.#  
+  ###.###                           #.#.#.#  
+XF....#.#                         RF..#.#.#  
+  #####.#                           #######  
+  #......CJ                       NM..#...#  
+  ###.#.#                           #.###.#  
+RE....#.#                           #......RF
+  ###.###        X   X       L      #.#.#.#  
+  #.....#        F   Q       P      #.#.#.#  
+  ###.###########.###.#######.#########.###  
+  #.....#...#.....#.......#...#.....#.#...#  
+  #####.#.###.#######.#######.###.###.#.#.#  
+  #.......#.......#.#.#.#.#...#...#...#.#.#  
+  #####.###.#####.#.#.#.#.###.###.#.###.###  
+  #.......#.....#.#...#...............#...#  
+  #############.#.#.###.###################  
+               A O F   N                     
+               A A D   M                     ";
+
     #[test]
     fn test_star_one() {
         assert_eq!(star_one(Cursor::new(INPUT1)), 23);
@@ -378,6 +441,6 @@ YN......#               VT..#....QG
     #[test]
     fn test_star_two() {
         // assert_eq!(star_two(Cursor::new(INPUT1)), 23);
-        // assert_eq!(star_two(Cursor::new(INPUT3)), 396);
+        assert_eq!(star_two(Cursor::new(INPUT3)), 396);
     }
 }
