@@ -10,15 +10,6 @@ enum Teleport {
     Outer(char, char),
 }
 
-impl Teleport {
-    fn get_chars(&self) -> (char, char) {
-        match self {
-            Teleport::Inner(a, b) => (*a, *b),
-            Teleport::Outer(a, b) => (*a, *b),
-        }
-    }
-}
-
 #[derive(Debug, Hash, PartialEq, Eq)]
 enum Tile {
     Wall,
@@ -111,8 +102,6 @@ fn get_graph(map: &[Vec<Tile>]) -> HashMap<&Teleport, HashMap<&Teleport, usize>>
         // println!()
     }
 
-    // dbg!(&teleporters);
-
     let mut graph = HashMap::new();
 
     for (from_tile, start) in &teleporters {
@@ -120,10 +109,6 @@ fn get_graph(map: &[Vec<Tile>]) -> HashMap<&Teleport, HashMap<&Teleport, usize>>
 
         let mut stack = VecDeque::new();
         stack.push_back((*start, 0));
-        // stack.push_back(((start.0.wrapping_sub(1), start.1), 1));
-        // stack.push_back(((start.0 + 1, start.1), 1));
-        // stack.push_back(((start.0, start.1.wrapping_sub(1)), 1));
-        // stack.push_back(((start.0, start.1 + 1), 1));
 
         let mut visited = HashSet::new();
 
@@ -278,21 +263,15 @@ pub fn star_two(input: impl BufRead) -> usize {
         // println!()
     }
     let graph = get_graph(&map);
-    dbg!(&graph);
 
     let start = Teleport::Outer('A', 'A');
 
     let mut costs = HashMap::new();
 
-    let mut stack = vec![(&start, 0, 0, vec![(&start, 0, 0)])];
+    let mut stack = vec![(&start, 0, 0)];
 
-    while let Some((current_teleport, current_depth, current_cost, path)) = stack.pop() {
-        // dbg!((current_teleport, current_depth));
+    while let Some((current_teleport, current_depth, current_cost)) = stack.pop() {
         if current_teleport == &Teleport::Outer('Z', 'Z') && current_depth == 0 {
-            for (t, d, c) in path {
-                let (a, b) = t.get_chars();
-                println!("({}, {}) {} - {}", a, b, d, c);
-            }
             return current_cost;
         }
         let cost = *costs
@@ -300,12 +279,7 @@ pub fn star_two(input: impl BufRead) -> usize {
             .unwrap_or(&usize::MAX);
         if cost >= current_cost {
             costs.insert((current_depth, current_teleport), current_cost);
-            // dbg!(graph.get(&current_teleport));
             for (next_teleport, &delta_cost) in graph.get(&current_teleport).unwrap() {
-                // dbg!(next_teleport);
-                // dbg!(matches!(current_teleport, Teleport::Outer(_, _)));
-                // dbg!(current_depth == 0);
-                // dbg!(delta_cost == 1);
                 if !(matches!(current_teleport, Teleport::Outer(_, _))
                     && current_depth == 0
                     && delta_cost == 1)
@@ -319,9 +293,7 @@ pub fn star_two(input: impl BufRead) -> usize {
                         current_depth
                     };
                     let new_cost = current_cost + delta_cost;
-                    let mut new_path = path.clone();
-                    new_path.push((next_teleport, next_depth, new_cost));
-                    stack.push((next_teleport, next_depth, new_cost, new_path));
+                    stack.push((next_teleport, next_depth, new_cost));
                 }
             }
         }
