@@ -23,11 +23,11 @@ WALK
     let mut computer = IntCode::new(&mut codes, 0, input);
     computer.run(0);
     let output = computer.take_output();
-    for &o in &output {
-        if o < 300 {
-            print!("{}", char::from_u32(o as u32).unwrap());
-        }
-    }
+    // for &o in &output {
+    //     if o < 300 {
+    //         print!("{}", char::from_u32(o as u32).unwrap());
+    //     }
+    // }
     *output.last().unwrap() as usize
 }
 
@@ -42,22 +42,26 @@ pub fn star_two(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let commands = "NOT A T
-NOT C J
+    let commands = "NOT C J 
+AND D J 
+AND H J
+NOT B T 
+AND D T 
 OR T J
-AND D J
+NOT A T 
+OR T J
 RUN
 ";
     let input = commands.chars().map(|c| c as isize).collect();
-    println!("{:?}", input);
+    // println!("{:?}", input);
     let mut computer = IntCode::new(&mut codes, 0, input);
     computer.run(0);
     let output = computer.take_output();
-    for &o in &output {
-        if o < 300 {
-            print!("{}", char::from_u32(o as u32).unwrap());
-        }
-    }
+    // for &o in &output {
+    //     if o < 300 {
+    //         print!("{}", char::from_u32(o as u32).unwrap());
+    //     }
+    // }
     *output.last().unwrap() as usize
 }
 
