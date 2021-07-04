@@ -14,7 +14,7 @@ impl FromStr for Instruction {
         match parts[1] {
             "deal into new" => Ok(Instruction::NewStack),
             "cut" => Ok(Instruction::Cut(
-                parts[0].parse().expect(format!("{}", s).as_str()),
+                parts[0].parse().unwrap_or_else(|_| panic!("{}", s)),
             )),
             "deal with increment" => Ok(Instruction::Increment(parts[0].parse().unwrap())),
             x => panic!("{}: {}", s, x),
