@@ -2,7 +2,7 @@ use std::io::BufRead;
 
 use itertools::Itertools;
 
-use crate::process;
+use crate::{process, IntCode};
 
 fn find_highest_output(codes: &mut Vec<isize>) -> (isize, isize, isize, isize, isize, isize) {
     let mut highest_output = (-1, -1, -1, -1, -1, 0);
@@ -40,114 +40,21 @@ pub fn star_one(input: impl BufRead) -> usize {
     highest_output as usize
 }
 
-// // TODO change to getting the input values.
-// fn process(
-//     codes: &mut [isize],
-//     start_index: usize,
-//     input: &mut Vec<isize>,
-// ) -> Option<(usize, isize)> {
-//     let mut index = start_index;
-//     let get_parameter = |program: &[isize], op, pos: usize| {
-//         // println!("{:?} {} {} {}", program, op, pos, (program[op] / (10*10_isize.pow(pos as u32))) % 10);
-//         if (program[op] / (10 * 10_isize.pow(pos as u32))) % 10 == 1 {
-//             program[op + pos]
-//         } else {
-//             program[program[op + pos] as usize]
-//         }
-//     };
-//     while index < codes.len() {
-//         match codes[index] % 100 {
-//             1 => {
-//                 let output_index = codes[index + 3] as usize;
-//                 let input1 = get_parameter(&codes, index, 1);
-//                 let input2 = get_parameter(&codes, index, 2);
-//                 codes[output_index] = input1 + input2;
-//                 index += 4;
-//             }
-//             2 => {
-//                 let output_index = codes[index + 3] as usize;
-//                 let input1 = get_parameter(&codes, index, 1);
-//                 let input2 = get_parameter(&codes, index, 2);
-//                 codes[output_index] = input1 * input2;
-//                 index += 4;
-//             }
-//             3 => {
-//                 let output_index = codes[index + 1] as usize;
-//                 codes[output_index] = input.remove(0);
-//                 index += 2
-//             }
-//             4 => {
-//                 let output_parameter = get_parameter(&codes, index, 1);
-//                 // output.push(output_parameter);
-//                 return Some((index + 2, output_parameter));
-//             }
-//             //Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
-//             5 => {
-//                 let input1 = get_parameter(&codes, index, 1);
-//                 let input2 = get_parameter(&codes, index, 2);
-//                 if input1 > 0 {
-//                     index = input2 as usize
-//                 } else {
-//                     index += 3
-//                 }
-//             }
-//             // Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
-//             6 => {
-//                 let input1 = get_parameter(&codes, index, 1);
-//                 let input2 = get_parameter(&codes, index, 2);
-//                 if input1 == 0 {
-//                     index = input2 as usize
-//                 } else {
-//                     index += 3
-//                 }
-//             }
-//             // Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
-//             7 => {
-//                 let output_index = codes[index + 3] as usize;
-//                 let input1 = get_parameter(&codes, index, 1);
-//                 let input2 = get_parameter(&codes, index, 2);
-//                 if input1 < input2 {
-//                     codes[output_index] = 1;
-//                 } else {
-//                     codes[output_index] = 0;
-//                 }
-//                 index += 4;
-//             }
-//             // Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
-//             8 => {
-//                 let output_index = codes[index + 3] as usize;
-//                 let input1 = get_parameter(&codes, index, 1);
-//                 let input2 = get_parameter(&codes, index, 2);
-//                 if input1 == input2 {
-//                     codes[output_index] = 1;
-//                 } else {
-//                     codes[output_index] = 0;
-//                 }
-//                 index += 4
-//             }
-//             99 => return None,
-//             _ => {
-//                 println!("{:?} ({})", codes, index);
-//                 panic!()
-//             }
-//         }
-//     }
-//     panic!();
-//     // return output;
-// }
-
-fn run_feedback(program: &[isize], settings: &[isize]) -> isize {
-    let mut programs = vec![(program.to_owned(), 0); settings.len()]; // (program, index)
+fn run_feedback(program: Vec<isize>, settings: &[isize]) -> isize {
+    let mut programs = vec![(IntCode::new(program, 0, vec![]), 0); settings.len()]; // (program, index)
     let mut last_output = 0;
     let mut i = 0;
     loop {
-        let (ref mut program, index) = &mut programs[i];
+        let (ref mut computer, index) = &mut programs[i];
         let mut input = vec![last_output];
         if index == &0 {
             input.insert(0, settings[i]);
         }
-        let (new_index, output, halted) = process(program, *index, &mut input, true);
-        println!("{:?}", output);
+        computer.set_input(input);
+        let (new_index, halted) = computer.run(1);
+        let output = computer.take_output();
+        // let (new_index, output, halted) = process(program, *index, &mut input, true);
+        // println!("{:?}", output);
         if halted {
             return last_output;
         } else {
@@ -163,14 +70,14 @@ fn run_feedback(program: &[isize], settings: &[isize]) -> isize {
 }
 
 fn find_highest_output2(
-    codes: &mut Vec<isize>,
+    codes: Vec<isize>,
     min: isize,
     max: isize,
 ) -> (isize, isize, isize, isize, isize, isize) {
     let mut highest_output = (-1, -1, -1, -1, -1, 0);
     for a in (min..max).permutations(5) {
-        let output = run_feedback(codes, &a);
-        println!("{:?}: {:?}", a, output);
+        let output = run_feedback(codes.clone(), &a);
+        // println!("{:?}: {:?}", a, output);
         if output > highest_output.5 {
             // println!("{:?}", output);
             highest_output = (a[0], a[1], a[2], a[3], a[4], output);
@@ -181,7 +88,7 @@ fn find_highest_output2(
 
 pub fn star_two(input: impl BufRead) -> usize {
     // !FIXME
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -191,26 +98,30 @@ pub fn star_two(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let (.., highest_output) = find_highest_output2(&mut codes, 5, 10);
+    let (.., highest_output) = find_highest_output2(codes, 5, 10);
     highest_output as usize
 }
 
 #[cfg(test)]
 mod tests2 {
+    use crate::IntCode;
+
     use super::*;
 
     #[test]
     fn test_program_1() {
-        let mut program = vec![1101, 100, -1, 4, 0];
-        let _output = process(&mut program, 0, &mut vec![1], true);
-        assert_eq!(program, vec!(1101, 100, -1, 4, 99));
+        let program = vec![1101, 100, -1, 4, 0];
+        let mut computer = IntCode::new(program, 0, vec![1]);
+        computer.run(1);
+        assert_eq!(computer.get_program(), vec![1101, 100, -1, 4, 99]);
     }
 
     #[test]
     fn test_program_1_2() {
-        let mut program = vec![1002, 4, 3, 4, 33];
-        let _output = process(&mut program, 0, &mut vec![1], true);
-        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
+        let program = vec![1002, 4, 3, 4, 33];
+        let mut computer = IntCode::new(program, 0, vec![1]);
+        computer.run(1);
+        assert_eq!(computer.get_program(), vec![1002, 4, 3, 4, 99]);
     }
 
     // #[test]
@@ -222,16 +133,17 @@ mod tests2 {
 
     #[test]
     fn test_program_2_2() {
-        let mut program = vec![1002, 4, 3, 4, 33];
-        let _output = process(&mut program, 0, &mut vec![5], true);
-        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
+        let program = vec![1002, 4, 3, 4, 33];
+        let mut computer = IntCode::new(program, 0, vec![5]);
+        computer.run(1);
+        assert_eq!(computer.get_program(), vec!(1002, 4, 3, 4, 99));
     }
 
     #[test]
     fn test_find_highest_output() {
         assert_eq!(
             find_highest_output2(
-                &mut vec![3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0],
+                vec![3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0],
                 0,
                 5
             ),
@@ -241,57 +153,64 @@ mod tests2 {
 
     #[test]
     fn test_feedback() {
-        let mut program = vec![
+        let program = vec![
             3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26, 27, 4, 27, 1001, 28, -1,
             28, 1005, 28, 6, 99, 0, 0, 5,
         ];
         let settings = vec![9, 8, 7, 6, 5];
-        let output = run_feedback(&mut program, &settings);
+        let output = run_feedback(program, &settings);
         assert_eq!(output, 139629729);
     }
 
     #[test]
     fn test_find_highest_feedback_output() {
-        let mut program = vec![
+        let program = vec![
             3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26, 27, 4, 27, 1001, 28, -1,
             28, 1005, 28, 6, 99, 0, 0, 5,
         ];
         assert_eq!(
-            find_highest_output2(&mut program, 5, 10),
+            find_highest_output2(program, 5, 10),
             (9, 8, 7, 6, 5, 139629729)
         );
     }
 }
 #[cfg(test)]
 mod tests {
+    use crate::IntCode;
+
     use super::*;
 
     #[test]
     fn test_program_1() {
-        let mut program = vec![1101, 100, -1, 4, 0];
-        let _output = process(&mut program, 0, &mut vec![1], true);
-        assert_eq!(program, vec!(1101, 100, -1, 4, 99));
+        let program = vec![1101, 100, -1, 4, 0];
+        let mut computer = IntCode::new(program, 0, vec![1]);
+        computer.run(1);
+        assert_eq!(computer.get_program(), vec!(1101, 100, -1, 4, 99));
     }
 
     #[test]
     fn test_program_1_2() {
-        let mut program = vec![1002, 4, 3, 4, 33];
-        let _output = process(&mut program, 0, &mut vec![1], true);
-        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
+        let program = vec![1002, 4, 3, 4, 33];
+        let mut computer = IntCode::new(program, 0, vec![1]);
+        computer.run(1);
+        assert_eq!(computer.get_program(), vec!(1002, 4, 3, 4, 99));
     }
 
     #[test]
     fn test_program_2() {
-        let mut program = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
-        let output = process(&mut program, 0, &mut vec![5], true);
-        assert_eq!(output.1[0], 1);
+        let program = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
+        let mut computer = IntCode::new(program, 0, vec![5]);
+        computer.run(1);
+        let output = computer.take_output();
+        assert_eq!(output[0], 1);
     }
 
     #[test]
     fn test_program_2_2() {
-        let mut program = vec![1002, 4, 3, 4, 33];
-        let _output = process(&mut program, 0, &mut vec![5], true);
-        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
+        let program = vec![1002, 4, 3, 4, 33];
+        let mut computer = IntCode::new(program, 0, vec![5]);
+        computer.run(1);
+        assert_eq!(computer.get_program(), vec![1002, 4, 3, 4, 99]);
     }
 
     #[test]

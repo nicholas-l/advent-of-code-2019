@@ -3,7 +3,7 @@ use std::{collections::HashMap, io::BufRead};
 use crate::IntCode;
 
 pub fn star_one(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -13,7 +13,7 @@ pub fn star_one(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let mut computer = IntCode::new(&mut codes, 0, vec![]);
+    let mut computer = IntCode::new(codes, 0, vec![]);
     let mut halted = false;
     let mut screen = HashMap::new();
     while !halted {
@@ -41,7 +41,7 @@ pub fn star_two(input: impl BufRead) -> usize {
         .collect();
     // Memory address 0 represents the number of quarters that have been inserted; set it to 2 to play for free.
     codes[0] = 2;
-    let mut computer = IntCode::new(&mut codes, 0, vec![]);
+    let mut computer = IntCode::new(codes, 0, vec![]);
     let mut halted = false;
     let mut screen = HashMap::new();
     let mut score = 0;

@@ -33,14 +33,14 @@ impl Display for Colour {
     }
 }
 
-fn paint(mut codes: Vec<isize>, start_panel: Colour) -> HashMap<(isize, isize), Colour> {
+fn paint(codes: Vec<isize>, start_panel: Colour) -> HashMap<(isize, isize), Colour> {
     let mut location = (0, 0);
     let mut direction = 0_isize;
     let mut panel = HashMap::new();
     panel.insert(location, start_panel);
 
     let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];
-    let mut computer = IntCode::new(&mut codes, 0, input);
+    let mut computer = IntCode::new(codes, 0, input);
     let mut halted = false;
     while !halted {
         let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];

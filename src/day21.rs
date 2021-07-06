@@ -3,7 +3,7 @@ use std::io::BufRead;
 use crate::IntCode;
 
 pub fn star_one(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -20,7 +20,7 @@ AND D J
 WALK
 ";
     let input = commands.chars().map(|c| c as isize).collect();
-    let mut computer = IntCode::new(&mut codes, 0, input);
+    let mut computer = IntCode::new(codes, 0, input);
     computer.run(0);
     let output = computer.take_output();
     // for &o in &output {
@@ -32,7 +32,7 @@ WALK
 }
 
 pub fn star_two(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -54,7 +54,7 @@ RUN
 ";
     let input = commands.chars().map(|c| c as isize).collect();
     // println!("{:?}", input);
-    let mut computer = IntCode::new(&mut codes, 0, input);
+    let mut computer = IntCode::new(codes, 0, input);
     computer.run(0);
     let output = computer.take_output();
     // for &o in &output {

@@ -115,7 +115,7 @@ fn get_map(mut computer: IntCode) -> (HashMap<Position, Space>, Position) {
 }
 
 pub fn star_one(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -125,7 +125,7 @@ pub fn star_one(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let computer = IntCode::new(&mut codes, 0, vec![]);
+    let computer = IntCode::new(codes, 0, vec![]);
 
     let (map, oxygen) = get_map(computer);
     /*
@@ -164,7 +164,7 @@ pub fn star_one(input: impl BufRead) -> usize {
 }
 
 pub fn star_two(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -174,7 +174,7 @@ pub fn star_two(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let computer = IntCode::new(&mut codes, 0, vec![]);
+    let computer = IntCode::new(codes, 0, vec![]);
 
     let (map, oxygen) = get_map(computer);
 

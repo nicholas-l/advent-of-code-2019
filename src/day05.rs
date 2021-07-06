@@ -35,9 +35,7 @@ pub fn star_two(input: impl BufRead) -> usize {
 
 #[cfg(test)]
 mod tests {
-    // use std::io::Cursor;
-
-    use super::*;
+    use crate::IntCode;
 
     #[test]
     fn test_star_one() {}
@@ -47,17 +45,19 @@ mod tests {
 
     #[test]
     fn test_program() {
-        let mut input = vec![1];
-        let mut program = vec![1101, 100, -1, 4, 0];
-        let _output = process(&mut program, 0, &mut input, true);
-        assert_eq!(program, vec!(1101, 100, -1, 4, 99));
+        let input = vec![1];
+        let program = vec![1101, 100, -1, 4, 0];
+        let mut computer = IntCode::new(program, 0, input);
+        computer.run(1);
+        assert_eq!(computer.get_program(), &vec![1101, 100, -1, 4, 99]);
     }
 
     #[test]
     fn test_program_2() {
-        let mut input = vec![1];
-        let mut program = vec![1002, 4, 3, 4, 33];
-        let _output = process(&mut program, 0, &mut input, false);
-        assert_eq!(program, vec!(1002, 4, 3, 4, 99));
+        let input = vec![1];
+        let program = vec![1002, 4, 3, 4, 33];
+        let mut computer = IntCode::new(program, 0, input);
+        computer.run(0);
+        assert_eq!(computer.get_program(), &vec![1002, 4, 3, 4, 99]);
     }
 }

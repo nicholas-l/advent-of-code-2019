@@ -1,7 +1,9 @@
 use std::io::BufRead;
 
+use crate::IntCode;
+
 pub fn star_one(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             String::from_utf8(v.unwrap())
@@ -10,9 +12,10 @@ pub fn star_one(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let mut input = Vec::new();
-    let (_index, _output, _halted) = super::process(&mut codes, 0, &mut input, true);
-    codes[0] as usize
+    let input = Vec::new();
+    let mut computer = IntCode::new(codes, 0, input);
+    computer.run(1);
+    computer.read(0) as usize
 }
 
 pub fn star_two(input: impl BufRead) -> usize {
@@ -29,13 +32,13 @@ pub fn star_two(input: impl BufRead) -> usize {
     for noun in 1..100 {
         for verb in 1..100 {
             let mut program = codes.clone();
-            let mut input = Vec::new();
+            let input = Vec::new();
             program[1] = noun;
             program[2] = verb;
-            let (_index, _output, _halted) = super::process(&mut program, 0, &mut input, true);
-
-            if program[0] == 19690720 {
-                println!("{} {}", noun, verb);
+            let mut computer = IntCode::new(program, 0, input);
+            computer.run(1);
+            if computer.read(0) == 19690720 {
+                // println!("{} {}", noun, verb);
                 return (100 * noun + verb) as usize;
             }
         }

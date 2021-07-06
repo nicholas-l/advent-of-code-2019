@@ -16,7 +16,7 @@ fn print_image(image: &[Vec<isize>]) {
 }
 
 pub fn star_one(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -26,7 +26,7 @@ pub fn star_one(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let mut computer = IntCode::new(&mut codes, 0, vec![]);
+    let mut computer = IntCode::new(codes, 0, vec![]);
     computer.run(0);
     let output = computer.take_output();
 
@@ -65,8 +65,8 @@ pub fn star_two(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let mut program = codes.clone();
-    let mut computer = IntCode::new(&mut program, 0, vec![]);
+    let program = codes.clone();
+    let mut computer = IntCode::new(program, 0, vec![]);
     computer.run(0);
     let output = computer.take_output();
 
@@ -102,7 +102,7 @@ pub fn star_two(input: impl BufRead) -> usize {
         .collect();
     // println!("{}", new_commands.iter().map(|&c| c as u8 as char).collect::<String>());
 
-    let mut computer = IntCode::new(&mut program, 0, new_commands);
+    let mut computer = IntCode::new(program, 0, new_commands);
     computer.run(0);
     let output = computer.take_output();
 

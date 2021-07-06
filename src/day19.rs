@@ -23,8 +23,8 @@ pub fn star_one(input: impl BufRead) -> usize {
         .sum()
 }
 
-fn get_point(mut program: Vec<isize>, x: usize, y: usize) -> isize {
-    let mut computer = IntCode::new(&mut program, 0, vec![x as isize, y as isize]);
+fn get_point(program: Vec<isize>, x: usize, y: usize) -> isize {
+    let mut computer = IntCode::new(program, 0, vec![x as isize, y as isize]);
     computer.run(1);
     let output = computer.take_output();
     // assert_eq!(output.len(), 1);

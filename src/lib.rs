@@ -23,8 +23,9 @@ pub mod day20;
 pub mod day21;
 pub mod day22;
 
-struct IntCode<'a> {
-    program: &'a mut Vec<isize>,
+#[derive(Debug, Clone)]
+struct IntCode {
+    program: Vec<isize>,
     input: Vec<isize>,
     index: usize,
     output: Vec<isize>,
@@ -32,8 +33,8 @@ struct IntCode<'a> {
     relative_base: isize,
 }
 
-impl IntCode<'_> {
-    fn new(program: &'_ mut Vec<isize>, start_index: usize, input: Vec<isize>) -> IntCode<'_> {
+impl IntCode {
+    fn new(program: Vec<isize>, start_index: usize, input: Vec<isize>) -> IntCode {
         IntCode {
             program,
             input,
@@ -57,6 +58,11 @@ impl IntCode<'_> {
 
     fn read(&self, index: usize) -> isize {
         *self.program.get(index).unwrap_or(&0)
+    }
+
+    #[allow(dead_code)]
+    fn get_program(&self) -> &[isize] {
+        &self.program
     }
 
     fn write(&mut self, index: usize, data: isize) {
@@ -186,7 +192,7 @@ pub fn process(
     input: &mut Vec<isize>,
     stop_if_output: bool,
 ) -> (usize, Vec<isize>, bool) {
-    let mut computer = IntCode::new(codes, start_index, input.to_vec());
+    let mut computer = IntCode::new(codes.clone(), start_index, input.to_vec());
 
     let (index, found_99) = computer.run(if stop_if_output { 1 } else { 0 });
 
