@@ -43,7 +43,7 @@ pub fn star_two(input: impl BufRead) -> usize {
         })
         .collect();
     let sample_x = 40;
-    let upper = dbg!((0..)
+    let upper = (0..)
         .map(|y| {
             if get_point(codes.clone(), sample_x, y) == 1 {
                 '#'
@@ -54,33 +54,33 @@ pub fn star_two(input: impl BufRead) -> usize {
         .enumerate()
         .find(|&(_, x)| x == '#')
         .map(|x| x.0)
-        .unwrap());
+        .unwrap();
 
-    let lower = dbg!(
-        upper
-            + (upper..)
-                .map(|y| {
-                    if get_point(codes.clone(), sample_x, y) == 1 {
-                        '#'
-                    } else {
-                        '.'
-                    }
-                })
-                .enumerate()
-                .find(|&(_, x)| x == '.')
-                .map(|x| x.0)
-                .unwrap()
-    );
+    let lower = upper
+        + (upper..)
+            .map(|y| {
+                if get_point(codes.clone(), sample_x, y) == 1 {
+                    '#'
+                } else {
+                    '.'
+                }
+            })
+            .enumerate()
+            .find(|&(_, x)| x == '.')
+            .map(|x| x.0)
+            .unwrap();
 
     let upper_angle = sample_x as f64 / (upper - 2) as f64;
     let lower_angle = sample_x as f64 / (lower + 2) as f64;
 
-    println!("{} - {}", upper_angle, lower_angle);
+    // println!("{} - {}", upper_angle, lower_angle);
 
     let max_width = 1200;
     let max_height = 1200;
-    println!("{}", lower_angle * 100f64 / (upper_angle - lower_angle));
-    let map: HashSet<(usize, usize)> = (0..=max_height)
+    let min_height = 1000;
+    let min_width = 800;
+    // println!("{}", lower_angle * 100f64 / (upper_angle - lower_angle));
+    let map: HashSet<(usize, usize)> = (min_height..=max_height)
         .flat_map(|y| {
             let lower_x = f64::floor(lower_angle * (y as f64)) as usize;
             let upper_x = f64::ceil(upper_angle * (y as f64)) as usize;
@@ -91,9 +91,9 @@ pub fn star_two(input: impl BufRead) -> usize {
         })
         .collect();
 
-    println!("Starting checks");
-    for y in 0..max_height {
-        for x in 0..max_width {
+    // println!("Starting checks");
+    for y in min_height..max_height {
+        for x in min_width..max_width {
             if map.contains(&(x, y)) && map.contains(&(x + 99, y)) && map.contains(&(x, y + 99)) {
                 return x * 10000 + y;
             }
