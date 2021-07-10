@@ -2,7 +2,7 @@ use std::io::BufRead;
 
 use itertools::Itertools;
 
-use crate::{process, IntCode};
+use crate::{process, IntCode, IntCodeState};
 
 fn find_highest_output(codes: &mut Vec<isize>) -> (isize, isize, isize, isize, isize, isize) {
     let mut highest_output = (-1, -1, -1, -1, -1, 0);
@@ -51,18 +51,18 @@ fn run_feedback(program: Vec<isize>, settings: &[isize]) -> isize {
             input.insert(0, settings[i]);
         }
         computer.set_input(input);
-        let (new_index, halted) = computer.run(1);
+        let state = computer.run(1);
         let output = computer.take_output();
         // let (new_index, output, halted) = process(program, *index, &mut input, true);
         // println!("{:?}", output);
-        if halted {
-            return last_output;
-        } else {
-            last_output = output[0];
-            programs[i].1 = new_index;
-            // indexes[i] = new_index;
-            // programs[(i + 1) %5].2 = output;
-            //programs[(i + 1) %5].2,
+        match state {
+            IntCodeState::Halted(_) => {
+                return last_output;
+            }
+            IntCodeState::Output(index) => {
+                last_output = output[0];
+                programs[i].1 = index;
+            }
         }
         // println!("{}: {:?} {}", i, indexes, last_output);
         i = (i + 1) % settings.len();

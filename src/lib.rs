@@ -23,6 +23,11 @@ pub mod day20;
 pub mod day21;
 pub mod day22;
 
+enum IntCodeState {
+    Halted(usize),
+    Output(usize),
+}
+
 #[derive(Debug, Clone)]
 struct IntCode {
     program: Vec<isize>,
@@ -87,7 +92,7 @@ impl IntCode {
     fn get_parameter(&self, op: usize, pos: usize) -> isize {
         self.read(self.get_index(op, pos))
     }
-    fn run(&mut self, output_max: usize) -> (usize, bool) {
+    fn run(&mut self, output_max: usize) -> IntCodeState {
         let mut found_99 = false;
         while self.index < self.len() {
             match self.program[self.index] % 100 {
@@ -182,7 +187,11 @@ impl IntCode {
                 }
             }
         }
-        (self.index, found_99)
+        if found_99 {
+            IntCodeState::Halted(self.index)
+        } else {
+            IntCodeState::Output(self.index)
+        }
     }
 }
 // TODO change to getting the input values.
@@ -194,9 +203,12 @@ pub fn process(
 ) -> (usize, Vec<isize>, bool) {
     let mut computer = IntCode::new(codes.clone(), start_index, input.to_vec());
 
-    let (index, found_99) = computer.run(if stop_if_output { 1 } else { 0 });
+    let state = computer.run(if stop_if_output { 1 } else { 0 });
 
-    (index, computer.take_output(), found_99)
+    match state {
+        IntCodeState::Halted(index) => (index, computer.take_output(), true),
+        IntCodeState::Output(index) => (index, computer.take_output(), false),
+    }
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io::BufRead};
 
-use crate::IntCode;
+use crate::{IntCode, IntCodeState};
 
 pub fn star_one(input: impl BufRead) -> usize {
     let codes: Vec<isize> = input
@@ -17,8 +17,8 @@ pub fn star_one(input: impl BufRead) -> usize {
     let mut halted = false;
     let mut screen = HashMap::new();
     while !halted {
-        let data = computer.run(3);
-        halted = data.1;
+        let state = computer.run(3);
+        halted = matches!(state, IntCodeState::Halted(_));
         if halted {
             break;
         }
@@ -51,8 +51,8 @@ pub fn star_two(input: impl BufRead) -> usize {
         // Move paddle to be under the ball.
         let input = vec![ball_x - paddle_x];
         computer.set_input(input);
-        let data = computer.run(3);
-        halted = data.1;
+        let state = computer.run(3);
+        halted = matches!(state, IntCodeState::Halted(_));
         if halted {
             break;
         }

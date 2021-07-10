@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display, io::BufRead};
 
-use crate::IntCode;
+use crate::{IntCode, IntCodeState};
 
 #[derive(Debug, Copy, Clone)]
 enum Colour {
@@ -45,16 +45,15 @@ fn paint(codes: Vec<isize>, start_panel: Colour) -> HashMap<(isize, isize), Colo
     while !halted {
         let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];
         computer.set_input(input);
-        let data = computer.run(1);
-        halted = data.1;
-        if halted {
+        let state = computer.run(1);
+        if let IntCodeState::Halted(_) = state {
             break;
         }
         panel.insert(location, Colour::from(computer.take_output()[0]));
         let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];
         computer.set_input(input);
         // Direction
-        let data = computer.run(1);
+        let state = computer.run(1);
         direction = match computer.take_output()[0] {
             0 => (direction + 90).rem_euclid(360),
             1 => (direction - 90).rem_euclid(360),
@@ -67,7 +66,7 @@ fn paint(codes: Vec<isize>, start_panel: Colour) -> HashMap<(isize, isize), Colo
             270 => (location.0 - 1, location.1), // Right
             x => panic!("Invalid direction: {}", x),
         };
-        halted = data.1;
+        halted = matches!(state, IntCodeState::Halted(_));
     }
     panel
 }
