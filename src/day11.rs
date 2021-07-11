@@ -40,7 +40,7 @@ fn paint(codes: Vec<isize>, start_panel: Colour) -> HashMap<(isize, isize), Colo
     panel.insert(location, start_panel);
 
     let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];
-    let mut computer = IntCode::new(codes, 0, input);
+    let mut computer = IntCode::new(codes, input);
     let mut halted = false;
     while !halted {
         let input = vec![*panel.get(&location).unwrap_or(&Colour::default()) as isize];

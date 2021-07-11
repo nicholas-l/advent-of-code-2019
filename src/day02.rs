@@ -13,7 +13,7 @@ pub fn star_one(input: impl BufRead) -> usize {
         })
         .collect();
     let input = Vec::new();
-    let mut computer = IntCode::new(codes, 0, input);
+    let mut computer = IntCode::new(codes, input);
     computer.run(1);
     computer.read(0) as usize
 }
@@ -35,7 +35,7 @@ pub fn star_two(input: impl BufRead) -> usize {
             let input = Vec::new();
             program[1] = noun;
             program[2] = verb;
-            let mut computer = IntCode::new(program, 0, input);
+            let mut computer = IntCode::new(program, input);
             computer.run(1);
             if computer.read(0) == 19690720 {
                 // println!("{} {}", noun, verb);

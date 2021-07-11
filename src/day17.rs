@@ -26,7 +26,7 @@ pub fn star_one(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let mut computer = IntCode::new(codes, 0, vec![]);
+    let mut computer = IntCode::new(codes, vec![]);
     computer.run(0);
     let output = computer.take_output();
 
@@ -66,7 +66,7 @@ pub fn star_two(input: impl BufRead) -> usize {
         })
         .collect();
     let program = codes.clone();
-    let mut computer = IntCode::new(program, 0, vec![]);
+    let mut computer = IntCode::new(program, vec![]);
     computer.run(0);
     let output = computer.take_output();
 
@@ -102,7 +102,7 @@ pub fn star_two(input: impl BufRead) -> usize {
         .collect();
     // println!("{}", new_commands.iter().map(|&c| c as u8 as char).collect::<String>());
 
-    let mut computer = IntCode::new(program, 0, new_commands);
+    let mut computer = IntCode::new(program, new_commands);
     computer.run(0);
     let output = computer.take_output();
 

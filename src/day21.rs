@@ -20,7 +20,7 @@ AND D J
 WALK
 ";
     let input = commands.chars().map(|c| c as isize).collect();
-    let mut computer = IntCode::new(codes, 0, input);
+    let mut computer = IntCode::new(codes, input);
     computer.run(0);
     let output = computer.take_output();
     // for &o in &output {
@@ -54,7 +54,7 @@ RUN
 ";
     let input = commands.chars().map(|c| c as isize).collect();
     // println!("{:?}", input);
-    let mut computer = IntCode::new(codes, 0, input);
+    let mut computer = IntCode::new(codes, input);
     computer.run(0);
     let output = computer.take_output();
     // for &o in &output {

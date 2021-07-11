@@ -125,7 +125,7 @@ pub fn star_one(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let computer = IntCode::new(codes, 0, vec![]);
+    let computer = IntCode::new(codes, vec![]);
 
     let (map, oxygen) = get_map(computer);
     /*
@@ -174,7 +174,7 @@ pub fn star_two(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let computer = IntCode::new(codes, 0, vec![]);
+    let computer = IntCode::new(codes, vec![]);
 
     let (map, oxygen) = get_map(computer);
 

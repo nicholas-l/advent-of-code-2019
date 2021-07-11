@@ -39,11 +39,11 @@ struct IntCode {
 }
 
 impl IntCode {
-    fn new(program: Vec<isize>, start_index: usize, input: Vec<isize>) -> IntCode {
+    fn new(program: Vec<isize>, input: Vec<isize>) -> IntCode {
         IntCode {
             program,
             input,
-            index: start_index,
+            index: 0,
             output: Vec::new(),
             // halted: false,
             relative_base: 0,

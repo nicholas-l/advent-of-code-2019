@@ -10,7 +10,7 @@ fn find_highest_output(codes: &mut Vec<isize>) -> (isize, isize, isize, isize, i
         let mut last_output = 0;
         for &x in &a {
             let input = vec![x, last_output];
-            let mut computer = IntCode::new(codes.clone(), 0, input);
+            let mut computer = IntCode::new(codes.clone(), input);
             computer.run(1);
             let output = computer.take_output();
             last_output = output[0];
@@ -40,7 +40,7 @@ pub fn star_one(input: impl BufRead) -> usize {
 }
 
 fn run_feedback(program: Vec<isize>, settings: &[isize]) -> isize {
-    let mut programs = vec![(IntCode::new(program, 0, vec![]), 0); settings.len()]; // (program, index)
+    let mut programs = vec![(IntCode::new(program, vec![]), 0); settings.len()]; // (program, index)
     let mut last_output = 0;
     let mut i = 0;
     loop {
@@ -108,7 +108,7 @@ mod tests2 {
     #[test]
     fn test_program_1() {
         let program = vec![1101, 100, -1, 4, 0];
-        let mut computer = IntCode::new(program, 0, vec![1]);
+        let mut computer = IntCode::new(program, vec![1]);
         computer.run(1);
         assert_eq!(computer.get_program(), vec![1101, 100, -1, 4, 99]);
     }
@@ -116,7 +116,7 @@ mod tests2 {
     #[test]
     fn test_program_1_2() {
         let program = vec![1002, 4, 3, 4, 33];
-        let mut computer = IntCode::new(program, 0, vec![1]);
+        let mut computer = IntCode::new(program, vec![1]);
         computer.run(1);
         assert_eq!(computer.get_program(), vec![1002, 4, 3, 4, 99]);
     }
@@ -124,7 +124,7 @@ mod tests2 {
     #[test]
     fn test_program_2_2() {
         let program = vec![1002, 4, 3, 4, 33];
-        let mut computer = IntCode::new(program, 0, vec![5]);
+        let mut computer = IntCode::new(program, vec![5]);
         computer.run(1);
         assert_eq!(computer.get_program(), vec!(1002, 4, 3, 4, 99));
     }
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn test_program_1() {
         let program = vec![1101, 100, -1, 4, 0];
-        let mut computer = IntCode::new(program, 0, vec![1]);
+        let mut computer = IntCode::new(program, vec![1]);
         computer.run(1);
         assert_eq!(computer.get_program(), vec!(1101, 100, -1, 4, 99));
     }
@@ -181,7 +181,7 @@ mod tests {
     #[test]
     fn test_program_1_2() {
         let program = vec![1002, 4, 3, 4, 33];
-        let mut computer = IntCode::new(program, 0, vec![1]);
+        let mut computer = IntCode::new(program, vec![1]);
         computer.run(1);
         assert_eq!(computer.get_program(), vec!(1002, 4, 3, 4, 99));
     }
@@ -189,7 +189,7 @@ mod tests {
     #[test]
     fn test_program_2() {
         let program = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
-        let mut computer = IntCode::new(program, 0, vec![5]);
+        let mut computer = IntCode::new(program, vec![5]);
         computer.run(1);
         let output = computer.take_output();
         assert_eq!(output[0], 1);
@@ -198,7 +198,7 @@ mod tests {
     #[test]
     fn test_program_2_2() {
         let program = vec![1002, 4, 3, 4, 33];
-        let mut computer = IntCode::new(program, 0, vec![5]);
+        let mut computer = IntCode::new(program, vec![5]);
         computer.run(1);
         assert_eq!(computer.get_program(), vec![1002, 4, 3, 4, 99]);
     }
