@@ -194,22 +194,6 @@ impl IntCode {
         }
     }
 }
-// TODO change to getting the input values.
-pub fn process(
-    codes: &mut Vec<isize>,
-    start_index: usize,
-    input: &mut Vec<isize>,
-    stop_if_output: bool,
-) -> (usize, Vec<isize>, bool) {
-    let mut computer = IntCode::new(codes.clone(), start_index, input.to_vec());
-
-    let state = computer.run(if stop_if_output { 1 } else { 0 });
-
-    match state {
-        IntCodeState::Halted(index) => (index, computer.take_output(), true),
-        IntCodeState::Output(index) => (index, computer.take_output(), false),
-    }
-}
 
 #[cfg(test)]
 mod tests {

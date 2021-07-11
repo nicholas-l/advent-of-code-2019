@@ -2,23 +2,22 @@ use std::io::BufRead;
 
 use itertools::Itertools;
 
-use crate::{process, IntCode, IntCodeState};
+use crate::{IntCode, IntCodeState};
 
 fn find_highest_output(codes: &mut Vec<isize>) -> (isize, isize, isize, isize, isize, isize) {
     let mut highest_output = (-1, -1, -1, -1, -1, 0);
     for a in (0..5).permutations(5) {
-        let mut input = vec![a[0], 0];
-        let (_, output, _halted) = process(&mut codes.clone(), 0, &mut input, true);
-        let mut input = vec![a[1], output[0]];
-        let (_, output, _halted) = process(&mut codes.clone(), 0, &mut input, true);
-        let mut input = vec![a[2], output[0]];
-        let (_, output, _halted) = process(&mut codes.clone(), 0, &mut input, true);
-        let mut input = vec![a[3], output[0]];
-        let (_, output, _halted) = process(&mut codes.clone(), 0, &mut input, true);
-        let mut input = vec![a[4], output[0]];
-        let (_, output, _halted) = process(&mut codes.clone(), 0, &mut input, true);
-        if output[0] > highest_output.5 {
-            highest_output = (a[0], a[1], a[2], a[3], a[4], output[0]);
+        let mut last_output = 0;
+        for &x in &a {
+            let input = vec![x, last_output];
+            let mut computer = IntCode::new(codes.clone(), 0, input);
+            computer.run(1);
+            let output = computer.take_output();
+            last_output = output[0];
+        }
+
+        if last_output > highest_output.5 {
+            highest_output = (a[0], a[1], a[2], a[3], a[4], last_output);
             // println!("{:?}", highest_output);
         }
     }
@@ -53,8 +52,6 @@ fn run_feedback(program: Vec<isize>, settings: &[isize]) -> isize {
         computer.set_input(input);
         let state = computer.run(1);
         let output = computer.take_output();
-        // let (new_index, output, halted) = process(program, *index, &mut input, true);
-        // println!("{:?}", output);
         match state {
             IntCodeState::Halted(_) => {
                 return last_output;
@@ -123,13 +120,6 @@ mod tests2 {
         computer.run(1);
         assert_eq!(computer.get_program(), vec![1002, 4, 3, 4, 99]);
     }
-
-    // #[test]
-    // fn test_program_2() {
-    //     let mut program = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
-    //     let output = process(&mut program, &mut vec![5]);
-    //     assert_eq!(output.last(), Some(&1));
-    // }
 
     #[test]
     fn test_program_2_2() {

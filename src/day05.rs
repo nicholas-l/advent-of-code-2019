@@ -1,8 +1,9 @@
-use super::process;
+use crate::IntCode;
+
 use std::io::BufRead;
 
 pub fn star_one(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -12,13 +13,15 @@ pub fn star_one(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let mut input = vec![1];
-    let (_index, output, _halted) = process(&mut codes, 0, &mut input, false);
+    let input = vec![1];
+    let mut computer = IntCode::new(codes, 0, input);
+    let _state = computer.run(0);
+    let output = computer.take_output();
     output.into_iter().find(|&x| x != 0).unwrap() as usize
 }
 
 pub fn star_two(input: impl BufRead) -> usize {
-    let mut codes: Vec<isize> = input
+    let codes: Vec<isize> = input
         .split(b',')
         .map(|v| {
             // println!("{}", &v);
@@ -28,8 +31,11 @@ pub fn star_two(input: impl BufRead) -> usize {
                 .unwrap()
         })
         .collect();
-    let mut input = vec![5];
-    let (_index, output, _halted) = process(&mut codes, 0, &mut input, false);
+    let input = vec![5];
+    let mut computer = IntCode::new(codes, 0, input);
+    let _state = computer.run(0);
+    let output = computer.take_output();
+
     output.into_iter().find(|&x| x != 0).unwrap() as usize
 }
 

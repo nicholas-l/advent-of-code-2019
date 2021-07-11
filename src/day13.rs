@@ -19,11 +19,10 @@ pub fn star_one(input: impl BufRead) -> usize {
     while !halted {
         let state = computer.run(3);
         halted = matches!(state, IntCodeState::Halted(_));
-        if halted {
-            break;
+        if !halted {
+            let output = computer.take_output();
+            screen.insert((output[0], output[1]), output[2]);
         }
-        let output = computer.take_output();
-        screen.insert((output[0], output[1]), output[2]);
     }
     screen.values().filter(|&&x| x == 2).count()
 }
