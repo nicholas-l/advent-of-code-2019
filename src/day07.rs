@@ -40,25 +40,24 @@ pub fn star_one(input: impl BufRead) -> usize {
 }
 
 fn run_feedback(program: Vec<isize>, settings: &[isize]) -> isize {
-    let mut programs = vec![(IntCode::new(program, vec![]), 0); settings.len()]; // (program, index)
+    let mut programs = vec![(IntCode::new(program, vec![]), false); settings.len()]; // (program, index)
     let mut last_output = 0;
     let mut i = 0;
     loop {
-        let (ref mut computer, index) = &mut programs[i];
+        let (ref mut computer, initialised) = &mut programs[i];
         let mut input = vec![last_output];
-        if index == &0 {
+        if !(*initialised) {
             input.insert(0, settings[i]);
+            *initialised = true;
         }
         computer.set_input(input);
-        let state = computer.run(1);
-        let output = computer.take_output();
-        match state {
+        match computer.run(1) {
             IntCodeState::Halted(_) => {
                 return last_output;
             }
-            IntCodeState::Output(index) => {
+            IntCodeState::Output(output) => {
+                computer.take_output(); // Clear output in computer since we have cloned it.
                 last_output = output[0];
-                programs[i].1 = index;
             }
         }
         // println!("{}: {:?} {}", i, indexes, last_output);

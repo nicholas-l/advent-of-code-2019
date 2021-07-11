@@ -24,8 +24,8 @@ pub mod day21;
 pub mod day22;
 
 enum IntCodeState {
-    Halted(usize),
-    Output(usize),
+    Halted(Vec<isize>),
+    Output(Vec<isize>),
 }
 
 #[derive(Debug, Clone)]
@@ -188,9 +188,9 @@ impl IntCode {
             }
         }
         if found_99 {
-            IntCodeState::Halted(self.index)
+            IntCodeState::Halted(self.output.clone())
         } else {
-            IntCodeState::Output(self.index)
+            IntCodeState::Output(self.output.clone())
         }
     }
 }
