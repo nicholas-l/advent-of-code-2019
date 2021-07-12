@@ -59,6 +59,7 @@ fn run_feedback(program: Vec<isize>, settings: &[isize]) -> isize {
                 computer.take_output(); // Clear output in computer since we have cloned it.
                 last_output = output[0];
             }
+            _ => panic!(),
         }
         // println!("{}: {:?} {}", i, indexes, last_output);
         i = (i + 1) % settings.len();

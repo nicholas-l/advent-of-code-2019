@@ -22,10 +22,12 @@ pub mod day19;
 pub mod day20;
 pub mod day21;
 pub mod day22;
+pub mod day23;
 
 enum IntCodeState {
     Halted(Vec<isize>),
     Output(Vec<isize>),
+    InputNeeded,
 }
 
 #[derive(Debug, Clone)]
@@ -93,7 +95,6 @@ impl IntCode {
         self.read(self.get_index(op, pos))
     }
     fn run(&mut self, output_max: usize) -> IntCodeState {
-        let mut found_99 = false;
         while self.index < self.len() {
             match self.program[self.index] % 100 {
                 1 => {
@@ -114,6 +115,9 @@ impl IntCode {
                 }
                 3 => {
                     let output_index = self.get_index(self.index, 1);
+                    if self.input.is_empty() {
+                        return IntCodeState::InputNeeded;
+                    }
                     let data = self.input.remove(0);
                     self.write(output_index, data);
                     self.index += 2
@@ -123,7 +127,7 @@ impl IntCode {
                     self.output.push(output_parameter);
                     self.index += 2;
                     if output_max > 0 && self.output.len() >= output_max {
-                        break;
+                        return IntCodeState::Output(self.output.clone());
                     }
                 }
                 //Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
@@ -177,21 +181,14 @@ impl IntCode {
                     self.index += 2
                 }
                 // Halt program
-                99 => {
-                    found_99 = true;
-                    break; // return None,
-                }
+                99 => return IntCodeState::Halted(self.output.clone()),
                 x => {
                     println!("{:?} [{}]: {}", self.program, self.index, x);
                     panic!()
                 }
             }
         }
-        if found_99 {
-            IntCodeState::Halted(self.output.clone())
-        } else {
-            IntCodeState::Output(self.output.clone())
-        }
+        unreachable!()
     }
 }
 
@@ -391,5 +388,13 @@ mod tests {
         assert_eq!(day22::star_one(get_data(&filepath)), 7096);
 
         assert_eq!(day22::star_two(get_data(&filepath)), 27697279941366);
+    }
+
+    #[test]
+    fn day23_complete() {
+        let filepath = Path::new("data").join("day23.txt");
+        assert_eq!(day23::star_one(get_data(&filepath)), 20665);
+
+        // assert_eq!(day23::star_two(get_data(&filepath)), 27697279941366);
     }
 }
