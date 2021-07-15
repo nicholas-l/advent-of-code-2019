@@ -24,6 +24,7 @@ pub mod day21;
 pub mod day22;
 pub mod day23;
 pub mod day24;
+pub mod day25;
 
 enum IntCodeState {
     Halted(Vec<isize>),
@@ -404,6 +405,14 @@ mod tests {
         let filepath = Path::new("data").join("day24.txt");
         assert_eq!(day24::star_one(get_data(&filepath)), 18350099);
 
-        assert_eq!(day24::star_two(get_data(&filepath)), 13358);
+        assert_eq!(day24::star_two(get_data(&filepath)), 2037);
+    }
+
+    #[test]
+    fn day25_complete() {
+        let filepath = Path::new("data").join("day25.txt");
+        assert_eq!(day25::star_one(get_data(&filepath)), 134227456);
+
+        assert_eq!(day25::star_two(get_data(&filepath)), 0);
     }
 }
