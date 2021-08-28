@@ -57,7 +57,7 @@ fn step(map: &[Vec<Space>]) -> Vec<Vec<Space>> {
         .map(|(i, row)| {
             row.iter()
                 .enumerate()
-                .map(|(j, x)| match (x, count_surrounding(&map, i, j)) {
+                .map(|(j, x)| match (x, count_surrounding(map, i, j)) {
                     (Space::Bug, 1) => Space::Bug,
                     (Space::Empty, 1 | 2) => Space::Bug,
                     (Space::Bug, _) => Space::Empty,
@@ -161,7 +161,7 @@ fn step2(
     let mut new_map = HashSet::new();
 
     for pos in &bug_positions {
-        if map_count.get(&pos).unwrap_or(&0) == &1 {
+        if map_count.get(pos).unwrap_or(&0) == &1 {
             new_map.insert(*pos);
         }
     }

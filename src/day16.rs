@@ -58,7 +58,7 @@ pub fn star_two(mut input: impl BufRead) -> usize {
     let offset = convert_number(&input_phase[..7]);
     let mut data = input_phase[offset..].to_vec();
     for _i in 0..100 {
-        let t: Vec<isize> = data
+        data = data
             .iter()
             .rev()
             .scan(0, |state, x| {
@@ -66,7 +66,7 @@ pub fn star_two(mut input: impl BufRead) -> usize {
                 Some((*state) % 10)
             })
             .collect();
-        data = t.into_iter().rev().collect();
+        data.reverse();
     }
     convert_number(&data[..8])
 }
