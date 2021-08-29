@@ -105,7 +105,7 @@ pub fn star_one(input: impl BufRead) -> usize {
         for j in (i + 1)..wires.len() {
             for segment1 in &wires[i].lines {
                 for segment2 in &wires[j].lines {
-                    if let Some(point) = segment1.intersects(&segment2) {
+                    if let Some(point) = segment1.intersects(segment2) {
                         intersections.push(point);
                     }
                 }
@@ -139,7 +139,7 @@ pub fn star_two(input: impl BufRead) -> usize {
             for segment1 in &wires[i].lines {
                 let mut line2_current_length = 0;
                 for segment2 in &wires[j].lines {
-                    if let Some(point) = segment1.intersects(&segment2) {
+                    if let Some(point) = segment1.intersects(segment2) {
                         intersections.push((
                             point.clone(),
                             line1_current_length + segment1.0.manhattan_distance(&point),

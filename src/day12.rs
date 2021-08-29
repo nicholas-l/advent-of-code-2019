@@ -136,7 +136,7 @@ impl System {
                         Velocity::default(),
                         |x, (j, other)| {
                             if i != j {
-                                let velocity_delta = position.get_velocity_delta(&other);
+                                let velocity_delta = position.get_velocity_delta(other);
                                 x + velocity_delta
                             } else {
                                 x

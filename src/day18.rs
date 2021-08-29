@@ -212,7 +212,7 @@ fn dijkstra(
         if cost <= *costs.get(&symbol).unwrap_or(&usize::MAX) {
             let locations = graph.get(&symbol).unwrap().iter().filter(|(symbol, _)| {
                 if let Space::Door(d) = symbol {
-                    return keys.contains(&d);
+                    return keys.contains(d);
                 }
                 true
             });
@@ -244,16 +244,16 @@ fn create_graph(data: &[Vec<Space>]) -> HashMap<Space, Vec<(Space, usize)>> {
                 Space::Empty => {}
                 Space::Wall => {}
                 Space::Door(_) => {
-                    graph.insert(*c, get_acessible_2(&data, &position));
+                    graph.insert(*c, get_acessible_2(data, &position));
                 }
                 Space::Key(_) => {
-                    graph.insert(*c, get_acessible_2(&data, &position));
+                    graph.insert(*c, get_acessible_2(data, &position));
                 }
                 Space::Entrance => {
-                    graph.insert(*c, get_acessible_2(&data, &position));
+                    graph.insert(*c, get_acessible_2(data, &position));
                 }
                 Space::Robot(_) => {
-                    graph.insert(*c, get_acessible_2(&data, &position));
+                    graph.insert(*c, get_acessible_2(data, &position));
                 }
             }
         }
