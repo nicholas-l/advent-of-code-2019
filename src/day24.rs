@@ -32,22 +32,22 @@ fn parse_map(input: impl BufRead) -> Vec<Vec<Space>> {
 fn count_surrounding(map: &[Vec<Space>], i: usize, j: usize) -> usize {
     map.get(i.wrapping_sub(1))
         .and_then(|r| r.get(j))
-        .map(|x| if matches!(x, Space::Bug) { 1 } else { 0 })
+        .map(|x| usize::from(matches!(x, Space::Bug)))
         .unwrap_or(0)
         + map
             .get(i + 1)
             .and_then(|r| r.get(j))
-            .map(|x| if matches!(x, Space::Bug) { 1 } else { 0 })
+            .map(|x| usize::from(matches!(x, Space::Bug)))
             .unwrap_or(0)
         + map
             .get(i)
             .and_then(|r| r.get(j.wrapping_sub(1)))
-            .map(|x| if matches!(x, Space::Bug) { 1 } else { 0 })
+            .map(|x| usize::from(matches!(x, Space::Bug)))
             .unwrap_or(0)
         + map
             .get(i)
             .and_then(|r| r.get(j + 1))
-            .map(|x| if matches!(x, Space::Bug) { 1 } else { 0 })
+            .map(|x| usize::from(matches!(x, Space::Bug)))
             .unwrap_or(0)
 }
 

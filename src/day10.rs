@@ -27,8 +27,7 @@ fn convert_map(data: impl BufRead) -> Vec<Vec<Space>> {
 }
 
 fn calculate_angle(origin_x: usize, origin_y: usize, point_x: usize, point_y: usize) -> isize {
-    ((((point_y as f64 - origin_y as f64).atan2(point_x as f64 - origin_x as f64)
-        + 2.5 * PI as f64)
+    ((((point_y as f64 - origin_y as f64).atan2(point_x as f64 - origin_x as f64) + 2.5 * PI)
         % (2.0 * PI)
         * 1000.0)
         .floor()) as isize

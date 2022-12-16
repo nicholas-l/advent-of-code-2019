@@ -28,9 +28,9 @@ fn star_one_stack(instructions: &[Instruction], mut stack: Vec<isize>) -> Vec<is
             Instruction::NewStack => stack.into_iter().rev().collect(),
             Instruction::Cut(x) => {
                 if x > &0 {
-                    stack.rotate_left(x.abs() as usize);
+                    stack.rotate_left(x.unsigned_abs());
                 } else {
-                    stack.rotate_right(x.abs() as usize);
+                    stack.rotate_right(x.unsigned_abs());
                 }
                 stack
             }
@@ -92,8 +92,8 @@ fn get_multiplier(instructions: &[Instruction], stack_size: i128) -> i128 {
             Instruction::NewStack => (multiplier * (stack_size - 1)) % stack_size,
             Instruction::Cut(_x) => multiplier,
             Instruction::Increment(x) => {
-                let x = modinverse(*x as i128, stack_size as i128).unwrap();
-                (multiplier * x as i128) % stack_size
+                let x = modinverse(*x as i128, stack_size).unwrap();
+                (multiplier * x) % stack_size
             }
         })
 }
@@ -113,7 +113,7 @@ fn get_addition(instructions: &[Instruction], stack_size: i128) -> i128 {
                 (addition + x) % stack_size
             }
             Instruction::Increment(x) => {
-                let x = modinverse(*x as i128, stack_size as i128).unwrap();
+                let x = modinverse(*x as i128, stack_size).unwrap();
                 (addition * x) % stack_size
             }
         })

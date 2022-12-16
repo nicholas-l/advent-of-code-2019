@@ -4,13 +4,13 @@ use itertools::Itertools;
 
 use crate::{IntCode, IntCodeState};
 
-fn find_highest_output(codes: &mut Vec<isize>) -> (isize, isize, isize, isize, isize, isize) {
+fn find_highest_output(codes: &mut [isize]) -> (isize, isize, isize, isize, isize, isize) {
     let mut highest_output = (-1, -1, -1, -1, -1, 0);
     for a in (0..5).permutations(5) {
         let mut last_output = 0;
         for &x in &a {
             let input = vec![x, last_output];
-            let mut computer = IntCode::new(codes.clone(), input);
+            let mut computer = IntCode::new(codes.to_vec(), input);
             computer.run(1);
             let output = computer.take_output();
             last_output = output[0];
