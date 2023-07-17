@@ -2,8 +2,9 @@ use std::{collections::HashMap, fmt::Display, io::BufRead};
 
 use crate::{IntCode, IntCodeState};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 enum Colour {
+    #[default]
     Black = 0,
     White = 1,
 }
@@ -15,12 +16,6 @@ impl From<isize> for Colour {
             1 => Colour::White,
             x => panic!("Unable to convert {} to colour", x),
         }
-    }
-}
-
-impl Default for Colour {
-    fn default() -> Self {
-        Colour::Black
     }
 }
 

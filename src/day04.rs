@@ -73,11 +73,11 @@ mod tests {
 
     #[test]
     fn test_check() {
-        assert_eq!(check(&112233), true);
-        assert_eq!(check(&123444), false);
-        assert_eq!(check(&111122), true);
-        assert_eq!(check(&111111), false);
-        assert_eq!(check(&223450), false);
-        assert_eq!(check(&123789), false);
+        assert!(check(&112233));
+        assert!(!check(&123444));
+        assert!(check(&111122));
+        assert!(!check(&111111));
+        assert!(!check(&223450));
+        assert!(!check(&123789));
     }
 }

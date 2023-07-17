@@ -206,7 +206,7 @@ mod tests {
     #[test]
     fn test_find_highest_output() {
         assert_eq!(
-            find_highest_output(&mut vec![
+            find_highest_output(&mut [
                 3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0
             ]),
             (4, 3, 2, 1, 0, 43210)
