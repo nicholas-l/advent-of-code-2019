@@ -105,8 +105,8 @@ pub fn star_two(input: impl BufRead) -> String {
         .map(|y| {
             (min_x..=max_x)
                 .rev()
-                .map(|x| format!("{}", panel.get(&(x, y)).unwrap_or(&Colour::Black)))
-                .collect()
+                .map(|x| panel.get(&(x, y)).unwrap_or(&Colour::Black).to_string())
+                .collect::<String>()
         })
         .collect::<Vec<String>>()
         .join("\n")
