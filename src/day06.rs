@@ -1,10 +1,10 @@
 use std::{collections::HashMap, io::BufRead};
 
 fn get_distance(objects: &HashMap<&str, &str>, key: &str) -> usize {
-    return objects
+    objects
         .get(key)
         .map(|k| get_distance(objects, k) + 1)
-        .unwrap_or(0);
+        .unwrap_or(0)
 }
 
 pub fn star_one(mut input: impl BufRead) -> usize {

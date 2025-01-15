@@ -74,7 +74,7 @@ impl Velocity {
     }
 }
 
-impl<'a, 'b> Add<&'a Velocity> for &'b Velocity {
+impl Add<&Velocity> for &Velocity {
     type Output = Velocity;
 
     fn add(self, rhs: &Velocity) -> Self::Output {
