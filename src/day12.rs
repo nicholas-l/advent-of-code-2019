@@ -2,8 +2,6 @@ use nom::character::complete::anychar;
 use nom::character::complete::char;
 use nom::multi::many1;
 use nom::sequence::separated_pair;
-#[allow(deprecated)]
-use nom::sequence::tuple;
 use nom::{
     bytes::complete::tag,
     character::complete::one_of,
@@ -26,8 +24,7 @@ struct Position {
 }
 
 fn parse_position(s: &str) -> IResult<&str, Position> {
-    #[allow(deprecated)]
-    let parse_decimal_str = recognize(tuple((opt(tag("-")), many1(one_of("0123456789")))));
+    let parse_decimal_str = recognize((opt(tag("-")), many1(one_of("0123456789"))));
     let decimal = map_res(parse_decimal_str, |s: &str| s.parse::<isize>());
     let coord = separated_pair(anychar, char('='), decimal);
     let coords = separated_list1(tag(", "), coord);
