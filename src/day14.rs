@@ -9,7 +9,7 @@ use nom::{
     character::complete::{alpha1, char, digit1, newline},
     multi::{many0, separated_list1},
     sequence::{delimited, preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 type Statement<'a> = (Vec<(&'a str, usize)>, (&'a str, usize));
@@ -20,24 +20,27 @@ fn parse_section(s: &str) -> IResult<&str, (&str, usize)> {
         many0(char(' ')),
         separated_pair(digit1, tag(" "), alpha1),
         many0(char(' ')),
-    )(s)?;
+    )
+    .parse(s)?;
     let m = multiplier.parse::<usize>().unwrap();
     Ok((input, (symbol, m)))
 }
 
 fn parse_statement(s: &str) -> IResult<&str, Vec<(&str, usize)>> {
-    let (input, sections) = separated_list1(tag(","), preceded(many0(tag(" ")), parse_section))(s)?;
+    let (input, sections) =
+        separated_list1(tag(","), preceded(many0(tag(" ")), parse_section)).parse(s)?;
     Ok((input, sections))
 }
 
 fn parse_line(s: &str) -> IResult<&str, Statement> {
-    let (input, (left, right)) = separated_pair(parse_statement, tag("=>"), parse_statement)(s)?;
+    let (input, (left, right)) =
+        separated_pair(parse_statement, tag("=>"), parse_statement).parse(s)?;
     assert_eq!(right.len(), 1);
     Ok((input, (left, right[0])))
 }
 
 fn parse_statements(s: &str) -> (Vec<&str>, Vec<Statement>) {
-    let (input, statements) = separated_list1(newline, parse_line)(s).unwrap();
+    let (input, statements) = separated_list1(newline, parse_line).parse(s).unwrap();
     assert_eq!(input.len(), 0);
     // get all possible symbols
     let symbols: HashSet<_> = statements

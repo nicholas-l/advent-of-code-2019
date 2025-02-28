@@ -8,8 +8,7 @@ use nom::{
     combinator::{map_res, opt, recognize},
     multi::separated_list1,
     sequence::delimited,
-    sequence::tuple,
-    IResult,
+    IResult, Parser,
 };
 use num::Integer;
 use std::io::BufRead;
@@ -25,11 +24,11 @@ struct Position {
 }
 
 fn parse_position(s: &str) -> IResult<&str, Position> {
-    let parse_decimal_str = recognize(tuple((opt(tag("-")), many1(one_of("0123456789")))));
+    let parse_decimal_str = recognize((opt(tag("-")), many1(one_of("0123456789"))));
     let decimal = map_res(parse_decimal_str, |s: &str| s.parse::<isize>());
     let coord = separated_pair(anychar, char('='), decimal);
     let coords = separated_list1(tag(", "), coord);
-    let (_rest, data) = delimited(char('<'), coords, char('>'))(s)?;
+    let (_rest, data) = delimited(char('<'), coords, char('>')).parse(s)?;
     let (_k, x) = data[0];
     let (_k, y) = data[1];
     let (_k, z) = data[2];
