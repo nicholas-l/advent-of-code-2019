@@ -32,14 +32,14 @@ fn parse_statement(s: &str) -> IResult<&str, Vec<(&str, usize)>> {
     Ok((input, sections))
 }
 
-fn parse_line(s: &str) -> IResult<&str, Statement> {
+fn parse_line(s: &str) -> IResult<&str, Statement<'_>> {
     let (input, (left, right)) =
         separated_pair(parse_statement, tag("=>"), parse_statement).parse(s)?;
     assert_eq!(right.len(), 1);
     Ok((input, (left, right[0])))
 }
 
-fn parse_statements(s: &str) -> (Vec<&str>, Vec<Statement>) {
+fn parse_statements(s: &str) -> (Vec<&str>, Vec<Statement<'_>>) {
     let (input, statements) = separated_list1(newline, parse_line).parse(s).unwrap();
     assert_eq!(input.len(), 0);
     // get all possible symbols

@@ -1,5 +1,5 @@
 use rayon::prelude::*;
-use std::{io::BufRead, iter::repeat};
+use std::{io::BufRead, iter::repeat_n};
 
 fn run(codes: Vec<isize>, loops: usize) -> Vec<isize> {
     let l = codes.len();
@@ -7,11 +7,10 @@ fn run(codes: Vec<isize>, loops: usize) -> Vec<isize> {
         (1..=l)
             .into_par_iter()
             .map(|d| {
-                let multiplier = repeat(0)
-                    .take(d)
-                    .chain(repeat(1).take(d))
-                    .chain(repeat(0).take(d))
-                    .chain(repeat(-1).take(d))
+                let multiplier = repeat_n(0, d)
+                    .chain(repeat_n(1, d))
+                    .chain(repeat_n(0, d))
+                    .chain(repeat_n(-1, d))
                     .cycle()
                     .skip(1);
                 phase
