@@ -209,25 +209,24 @@ pub fn star_one(input: impl BufRead) -> usize {
                     stack.push(((x, y + 1), steps + 1));
                 }
             }
-            Some(Tile::Teleport(_teleport)) => {
-                if costs[y][x] > steps {
-                    costs[y][x] = steps;
-                    // add teleported position to stack
-                    let new_positions = teleporter_positions.get(&map[y][x]).unwrap();
-                    if new_positions.len() > 1 {
-                        assert_eq!(new_positions.len(), 2, "Panic'd at {} {}", x, y);
-                        let (new_x, new_y) = new_positions.iter().find(|&p| p != &(x, y)).unwrap();
-                        costs[*new_y][*new_x] = steps + 1;
-                        let x = *new_x;
-                        let y = *new_y;
-                        stack.push(((x.wrapping_sub(1), y), steps + 2));
-                        stack.push(((x + 1, y), steps + 2));
+            Some(Tile::Teleport(_teleport)) if costs[y][x] > steps => {
+                costs[y][x] = steps;
+                // add teleported position to stack
+                let new_positions = teleporter_positions.get(&map[y][x]).unwrap();
+                if new_positions.len() > 1 {
+                    assert_eq!(new_positions.len(), 2, "Panic'd at {} {}", x, y);
+                    let (new_x, new_y) = new_positions.iter().find(|&p| p != &(x, y)).unwrap();
+                    costs[*new_y][*new_x] = steps + 1;
+                    let x = *new_x;
+                    let y = *new_y;
+                    stack.push(((x.wrapping_sub(1), y), steps + 2));
+                    stack.push(((x + 1, y), steps + 2));
 
-                        stack.push(((x, y.wrapping_sub(1)), steps + 2));
-                        stack.push(((x, y + 1), steps + 2));
-                    }
+                    stack.push(((x, y.wrapping_sub(1)), steps + 2));
+                    stack.push(((x, y + 1), steps + 2));
                 }
             }
+            _ => {}
         }
     }
     let end = teleporter_positions
@@ -316,14 +315,14 @@ mod tests {
   #######.#######.#  
   #######.#######.#  
   #####  B    ###.#  
-BC...##  C    ###.#  
+ BC...##  C    ###.#  
   ##.##       ###.#  
   ##...DE  F  ###.#  
   #####    G  ###.#  
   #########.#####.#  
-DE..#######...###.#  
+ DE..#######...###.#  
   #.#########.###.#  
-FG..#########.....#  
+ FG..#########.....#  
   ###########.#####  
              Z       
              Z       ";
@@ -343,15 +342,15 @@ FG..#########.....#
   #.#.#.#                 #.#####  
   #...#.#               YN....#.#  
   #.###.#                 #####.#  
-DI....#.#                 #.....#  
+ DI....#.#                 #.....#  
   #####.#                 #.###.#  
-ZZ......#               QG....#..AS
+ ZZ......#               QG....#..AS
   ###.###                 #######  
-JO..#.#.#                 #.....#  
+ JO..#.#.#                 #.....#  
   #.#.#.#                 ###.#.#  
   #...#..DI             BU....#..LF
   #####.#                 #.#####  
-YN......#               VT..#....QG
+ YN......#               VT..#....QG
   #.###.#                 #.###.#  
   #.#...#                 #.....#  
   ###.###    J L     J    #.#.###  
@@ -381,17 +380,17 @@ YN......#               VT..#....QG
   #.###.#                           #.###.#  
   #.#....OA                       WB..#.#..ZH
   #.###.#                           #.#.#.#  
-CJ......#                           #.....#  
+ CJ......#                           #.....#  
   #######                           #######  
   #.#....CK                         #......IC
   #.###.#                           #.###.#  
   #.....#                           #...#.#  
   ###.###                           #.#.#.#  
-XF....#.#                         RF..#.#.#  
+ XF....#.#                         RF..#.#.#  
   #####.#                           #######  
   #......CJ                       NM..#...#  
   ###.#.#                           #.###.#  
-RE....#.#                           #......RF
+ RE....#.#                           #......RF
   ###.###        X   X       L      #.#.#.#  
   #.....#        F   Q       P      #.#.#.#  
   ###.###########.###.#######.#########.###  
@@ -401,8 +400,8 @@ RE....#.#                           #......RF
   #####.###.#####.#.#.#.#.###.###.#.###.###  
   #.......#.....#.#...#...............#...#  
   #############.#.#.###.###################  
-               A O F   N                     
-               A A D   M                     ";
+                 A O F   N                     
+                 A A D   M                     ";
 
     #[test]
     fn test_star_one() {
